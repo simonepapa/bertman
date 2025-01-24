@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,css,md}": [
+      "npm --prefix frontend run lint -- --fix",
+      "npm --prefix frontend run prettier --"
+    ]
+  }
+}

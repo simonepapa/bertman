@@ -1,0 +1,23 @@
+export default {
+  plugins: [
+    "@trivago/prettier-plugin-sort-imports",
+    "prettier-plugin-tailwindcss"
+  ],
+  parser: "typescript",
+  overrides: [
+    {
+      files: "*.css",
+      options: {
+        parser: "css"
+      }
+    },
+  ],
+  printWidth: 80,
+  tabWidth: 2,
+  semi: false,
+  singleQuote: false,
+  jsxSingleQuote: false,
+  trailingComma: "none",
+  bracketSameLine: true,
+  bracketSpacing: true
+}

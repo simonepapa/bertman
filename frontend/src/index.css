@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Playwrite DK Loopet";
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  src: url("/fonts/PlaywriteDKLoopet-Regular.ttf");
+}
+
+.logo {
+  font-family: "Playwrite DK Loopet", cursive;
+}
