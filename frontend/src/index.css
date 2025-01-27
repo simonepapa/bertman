@@ -1,6 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-text-primary: #1a1e23;
+  --color-text-secondary: #00000099;
+}
 
 @font-face {
   font-family: "Playwrite DK Loopet";
@@ -18,4 +21,38 @@
   right: 0;
   top: 0;
   background-color: red;
+}
+
+.info-card {
+  position: fixed;
+  background-color: #fff;
+  color: rgba(0, 0, 0, 0.87);
+  -webkit-transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  border-radius: 4px;
+  overflow: hidden;
+  width: calc(100% - 32px);
+  height: fit-content;
+  z-index: 1500;
+  padding: 16px;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@media (min-width: 576px) {
+  .info-card {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 1200px) {
+  .info-card {
+    bottom: unset;
+    left: unset;
+    transform: none;
+    top: 32px;
+    right: 32px;
+    max-width: 400px;
+  }
 }

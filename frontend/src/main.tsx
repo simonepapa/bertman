@@ -1,4 +1,5 @@
 import "./index.css";
+import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
 import TestRoom from "./pages/TestRoom";
 import { StrictMode } from "react";
@@ -13,6 +14,10 @@ const router = createBrowserRouter([
   {
     path: "/testroom",
     element: <TestRoom />
+  },
+  {
+    path: "/dashboard",
+    element: <Dashboard />
   }
 ]);
 
