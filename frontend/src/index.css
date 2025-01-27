@@ -13,3 +13,9 @@
 .logo {
   font-family: "Playwrite DK Loopet", cursive;
 }
+
+.custom-info {
+  right: 0;
+  top: 0;
+  background-color: red;
+}
