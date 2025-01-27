@@ -2,7 +2,7 @@ import json
 import sqlite3
 
 # Percorsi dei file
-json_file_path = './dataset.json'  # Percorso del file JSON
+json_file_path = 'data/dataset.json'  # Percorso del file JSON
 db_file_path = './database.db'  # Percorso del database SQLite
 
 # Caricamento del file JSON
@@ -16,10 +16,11 @@ cursor = conn.cursor()
 # Inserimento dei dati dal file JSON
 for item in json_data:
     cursor.execute('''
-    INSERT INTO articles (link, title, date, content, omicidio, omicidio_prob, omicidio_colposo, omicidio_colposo_prob, omicidio_stradale, omicidio_stradale_prob, tentato_omicidio, tentato_omicidio_prob, furto, furto_prob, rapina, rapina_prob, violenza_sessuale, violenza_sessuale_prob, aggressione, aggressione_prob, spaccio, spaccio_prob, truffa, truffa_prob, estorsione, estorsione_prob, contrabbando, contrabbando_prob, associazione_di_tipo_mafioso, associazione_di_tipo_mafioso_prob)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO articles (link, python_id, title, date, content, omicidio, omicidio_prob, omicidio_colposo, omicidio_colposo_prob, omicidio_stradale, omicidio_stradale_prob, tentato_omicidio, tentato_omicidio_prob, furto, furto_prob, rapina, rapina_prob, violenza_sessuale, violenza_sessuale_prob, aggressione, aggressione_prob, spaccio, spaccio_prob, truffa, truffa_prob, estorsione, estorsione_prob, contrabbando, contrabbando_prob, associazione_di_tipo_mafioso, associazione_di_tipo_mafioso_prob)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         item['link'],
+        item['python_id'],
         item['title'],
         item['date'],
         item['content'],

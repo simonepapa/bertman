@@ -1,5 +1,4 @@
 import Test from "../components/Test";
-import data from "../data/quartieri.json";
 import { Feature, GeoJsonObject } from "geojson";
 import {
   GeoJSONOptions,
@@ -7,10 +6,31 @@ import {
   Layer,
   LeafletMouseEvent
 } from "leaflet";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
 
-function Home() {
+function TestRoom() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("http://127.0.0.1:5000/get-data");
+
+        if (response.ok) {
+          const jsonData = await response.json();
+          setData(jsonData);
+        } else {
+          console.error("Response error", response.status);
+        }
+      } catch (error) {
+        console.error("Request error", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const [info, setInfo] = useState<{
     name: string;
     crime_index_normalizzato_pesato: string | number;
@@ -24,19 +44,19 @@ function Home() {
   const position: LatLngExpression = [41.117143, 16.871871];
 
   function getColor(d: number) {
-    return d > 50
+    return d > 15000
       ? "#800026"
-      : d > 40
+      : d > 10000
         ? "#BD0026"
-        : d > 30
+        : d > 5000
           ? "#E31A1C"
-          : d > 20
+          : d > 4000
             ? "#FC4E2A"
-            : d > 10
+            : d > 3000
               ? "#FD8D3C"
-              : d > 5
+              : d > 2000
                 ? "#FEB24C"
-                : d > 1
+                : d > 1000
                   ? "#FED976"
                   : "#FFEDA0";
   }
@@ -109,4 +129,4 @@ function Home() {
     </div>
   );
 }
-export default Home;
+export default TestRoom;
