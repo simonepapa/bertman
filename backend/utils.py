@@ -24,7 +24,7 @@ def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes):
         "associazione_di_tipo_mafioso": 1,
     }
 
-    # Filtra i dizionari rimuovendo i crimini non selezionati
+    # Filter crimes
     if (len(selected_crimes) > 0):
       filtered_crimes = {k: v for k, v in crimes.items() if k in selected_crimes}
     else:
@@ -43,7 +43,7 @@ def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes):
       # Normalized risk index
       crimini_totali = sum([crime_data[crime]["frequenza"] for crime in crime_data])
       for crime in filtered_crimes.keys():
-          risk_index = crime_data[crime]["frequenza"] * weights[crime] * 100
+          risk_index = crime_data[crime]["frequenza"] * weights[crime]
           crime_data[crime]["crime_index_normalizzato"] = round(
               risk_index / crimini_totali if crimini_totali > 0 else 0, 2
           )
@@ -72,19 +72,30 @@ def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes):
 def calculate_statistics(quartieri_df, geojson_data): 
     indice_rischio_totale_di_tutti_i_quartieri = quartieri_df['Indice di rischio'].sum()
 
-    quartieri_df
     statistiche_dict = {}
+    crime_index_normalizzato_pesato_values = []
+
     for index, row in quartieri_df.iterrows():
         quartiere = row["Quartiere"]
         crimini_totali = row["Totale crimini"]
-        crime_index_normalizzato = float(row["Indice di rischio"] / indice_rischio_totale_di_tutti_i_quartieri) * 100
-        crime_index_normalizzato_pesato = float((row["Indice di rischio"] / indice_rischio_totale_di_tutti_i_quartieri) * row["Peso quartiere"]) * 100
+        crime_index_normalizzato = float(row["Indice di rischio"] / indice_rischio_totale_di_tutti_i_quartieri)
+        crime_index_normalizzato_pesato = float((row["Indice di rischio"] / indice_rischio_totale_di_tutti_i_quartieri) * row["Peso quartiere"])
+
+        crime_index_normalizzato_pesato_values.append(crime_index_normalizzato_pesato)
         
         statistiche_dict[quartiere] = {
             "crimini_totali": crimini_totali,
             "crime_index_normalizzato": round(crime_index_normalizzato, 2),
             "crime_index_normalizzato_pesato": round(crime_index_normalizzato_pesato, 2),
         }
+
+    max_weighted_crime_index = max(crime_index_normalizzato_pesato_values)
+
+    # Update dictionary
+    for quartiere in statistiche_dict:
+        crime_index_normalizzato_pesato = statistiche_dict[quartiere]["crime_index_normalizzato_pesato"]
+        crime_index_normalizzato_pesato_normalizzato = (crime_index_normalizzato_pesato / max_weighted_crime_index) * 100
+        statistiche_dict[quartiere]["crime_index_normalizzato_pesato"] = round(crime_index_normalizzato_pesato_normalizzato, 2)
 
     for feature in geojson_data['features']:
         python_id = feature['properties'].get('python_id')

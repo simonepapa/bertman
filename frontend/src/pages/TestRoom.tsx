@@ -15,9 +15,7 @@ function TestRoom() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          "http://127.0.0.1:5000/get-data?quartieri=san-paolo,japigia"
-        );
+        const response = await fetch("http://127.0.0.1:5000/get-data");
 
         if (response.ok) {
           const jsonData = await response.json();
@@ -46,21 +44,23 @@ function TestRoom() {
   const position: LatLngExpression = [41.117143, 16.871871];
 
   function getColor(d: number) {
-    return d > 15000
-      ? "#800026"
-      : d > 10000
-        ? "#BD0026"
-        : d > 5000
-          ? "#E31A1C"
-          : d > 4000
-            ? "#FC4E2A"
-            : d > 3000
-              ? "#FD8D3C"
-              : d > 2000
-                ? "#FEB24C"
-                : d > 1000
-                  ? "#FED976"
-                  : "#FFEDA0";
+    return d > 80
+      ? "#7f0000"
+      : d > 70
+        ? "#b30000"
+        : d > 60
+          ? "#d7301f"
+          : d > 50
+            ? "#ef6548"
+            : d > 40
+              ? "#fc8d59"
+              : d > 30
+                ? "#fdbb84"
+                : d > 20
+                  ? "#fdd49e"
+                  : d > 10
+                    ? "#fee8c8"
+                    : "#fff7ec";
   }
 
   const style = (feature: Feature) => {
