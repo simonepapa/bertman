@@ -6,31 +6,68 @@ import { GeoJSON, useMap } from "react-leaflet";
 type Props = {
   setInfo: Dispatch<SetStateAction<InfoQuartiere>>;
   data: GeoJsonObject | null;
+  color: string;
 };
 
-function ChoroplethMap({ setInfo, data }: Props) {
+function ChoroplethMap({ setInfo, data, color }: Props) {
   const map = useMap();
 
-  console.log(data);
-
   function getColor(d: number) {
-    return d > 80
-      ? "#7f0000"
-      : d > 70
-        ? "#b30000"
-        : d > 60
-          ? "#d7301f"
-          : d > 50
-            ? "#ef6548"
-            : d > 40
-              ? "#fc8d59"
-              : d > 30
-                ? "#fdbb84"
-                : d > 20
-                  ? "#fdd49e"
-                  : d > 10
-                    ? "#fee8c8"
-                    : "#fff7ec";
+    if (color === "red") {
+      return d > 80
+        ? "#7f0000"
+        : d > 70
+          ? "#b30000"
+          : d > 60
+            ? "#d7301f"
+            : d > 50
+              ? "#ef6548"
+              : d > 40
+                ? "#fc8d59"
+                : d > 30
+                  ? "#fdbb84"
+                  : d > 20
+                    ? "#fdd49e"
+                    : d > 10
+                      ? "#fee8c8"
+                      : "#fff7ec";
+    } else if (color === "blue") {
+      return d > 80
+        ? "#023858"
+        : d > 70
+          ? "#045a8d"
+          : d > 60
+            ? "#0570b0"
+            : d > 50
+              ? "#3690c0"
+              : d > 40
+                ? "#74a9cf"
+                : d > 30
+                  ? "#a6bddb"
+                  : d > 20
+                    ? "#d0d1e6"
+                    : d > 10
+                      ? "#ece7f2"
+                      : "#fff7fb";
+    } else if (color === "green") {
+      return d > 80
+        ? "#00441b"
+        : d > 70
+          ? "#006d2c"
+          : d > 60
+            ? "#238b45"
+            : d > 50
+              ? "#41ae76"
+              : d > 40
+                ? "#66c2a4"
+                : d > 30
+                  ? "#99d8c9"
+                  : d > 20
+                    ? "#ccece6"
+                    : d > 10
+                      ? "#e5f5f9"
+                      : "#f7fcfd";
+    }
   }
 
   const style = (feature: Feature) => {
