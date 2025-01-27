@@ -22,18 +22,22 @@ def get_data():
     # Connect to database
     conn = sqlite3.connect("database.db")
 
-    geojson_file = "data/quartieri.geojson"
+    # Create GeoJSON data
+    geojson_data = {
+        "type": "FeatureCollection",
+        "features": []
+    }
 
-    # Carica il file GeoJSON
-    with open(geojson_file, "r", encoding="utf-8") as file:
-        data = json.load(file)
-
+    # Input parameters
     date = request.args.get('date', default='')
     crimes = request.args.get('crimes', default='omicidio,omicidio_colposo,omicidio_stradale,tentato_omicidio,furto,rapina,violenza_sessuale,aggressione,spaccio,truffa,estorsione,associazione_di_tipo_mafioso').split(',')
-    quartieri = ["bari-vecchia_san-nicola", "carbonara", "carrassi", "ceglie-del-campo", "japigia", "liberta", "loseto", "madonnella", "murat", "palese-macchie", "picone", "san-paolo", "san-pasquale", "santo-spirito", "stanic", "torre-a-mare", "san-girolamo_fesca"]
+    quartieri = request.args.get('quartieri', default='bari-vecchia_san-nicola,carbonara,carrassi,ceglie-del-campo,japigia,liberta,loseto,madonnella,murat,palese-macchie,picone,san-paolo,san-pasquale,santo-spirito,stanic,torre-a-mare,san-girolamo_fesca').split(',')
 
+    quartieri_array = list(map(str, quartieri))
+
+    # Create a dataframe for quartieri
     quartieri_data = {
-        'Quartiere': quartieri,
+        'Quartiere': quartieri_array,
         'Totale crimini': [],
         'Indice di rischio': [],
         'Indice di rischio normalizzato': []
@@ -47,16 +51,42 @@ def get_data():
 
     quartieri_df = pd.DataFrame(quartieri_data)
 
+    # Read all articles from the database
     articles_df = pd.read_sql_query("SELECT * FROM articles", conn)
 
-    data = analyze_quartieri(articles_df, quartieri_df, data, crimes)
-#
-    data = calculate_statistics(quartieri_df, data)
+    # Add features to GeoJSON
+    with open("data/quartieri.json", "r", encoding="utf-8") as file:
+        geometry_json = json.load(file)
+        
+    for quartiere in quartieri_array:
+        # Find quartiere in geometry JSON
+        matching_quartiere = next(
+            (feature for feature in geometry_json if feature.get("python_id") == quartiere), None
+        )
+        
+        if matching_quartiere:
+            # Create feature
+            feature = {
+                "type": "Feature",
+                "properties": {
+                    "name": matching_quartiere["name"],
+                    "python_id": matching_quartiere["python_id"]
+                },
+                "geometry": matching_quartiere["geometry"] 
+            }
+            # Add it to features
+            geojson_data["features"].append(feature)
+
+    # Analysis dei quartieri
+    geojson_data = analyze_quartieri(articles_df, quartieri_df, geojson_data, crimes)
+
+    # Calculate statistics of quartieri
+    geojson_data = calculate_statistics(quartieri_df, geojson_data)
 
     # Close connection
     conn.close()
 
-    return jsonify(data)
+    return jsonify(geojson_data)
 
 
 if __name__ == '__main__':

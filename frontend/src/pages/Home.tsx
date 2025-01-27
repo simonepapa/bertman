@@ -6,7 +6,9 @@ function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:5000/get-data");
+        const response = await fetch(
+          "http://127.0.0.1:5000/get-data?quartieri=san-paolo,japigia"
+        );
 
         if (response.ok) {
           const jsonData = await response.json();

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-def analyze_quartieri(articles_df, quartieri_df, data, selected_crimes): 
+def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes): 
     crimes = {
         "omicidio": 0,
         "omicidio_colposo": 0,
@@ -30,10 +30,10 @@ def analyze_quartieri(articles_df, quartieri_df, data, selected_crimes):
     else:
       filtered_crimes = crimes
 
-    for group, group_df in articles_df.groupby("python_id"):
+    for group, group_df in articles_df.groupby("quartiere"):
       crime_data = {key: {"frequenza": 0, "crime_index_normalizzato": 0} for key in filtered_crimes}
 
-      # Group equals python_id
+      # Group equals python_id/quartiere
       # Frequency
       for index, row in group_df.iterrows():
           for crime in filtered_crimes.keys():
@@ -49,7 +49,7 @@ def analyze_quartieri(articles_df, quartieri_df, data, selected_crimes):
           )
 
       # Add to GeoJSON
-      for feature in data["features"]:
+      for feature in geojson_data["features"]:
           if feature["properties"].get("python_id") == group:
               feature["properties"]["crimini"] = crime_data
               break
@@ -66,10 +66,10 @@ def analyze_quartieri(articles_df, quartieri_df, data, selected_crimes):
       )
       quartieri_df.loc[quartieri_df['Quartiere'] == group, 'Indice di rischio'] = indice_di_rischio_totale
 
-    return data
+    return geojson_data
 
 
-def calculate_statistics(quartieri_df, data): 
+def calculate_statistics(quartieri_df, geojson_data): 
     indice_rischio_totale_di_tutti_i_quartieri = quartieri_df['Indice di rischio'].sum()
 
     quartieri_df
@@ -86,7 +86,7 @@ def calculate_statistics(quartieri_df, data):
             "crime_index_normalizzato_pesato": round(crime_index_normalizzato_pesato, 2),
         }
 
-    for feature in data['features']:
+    for feature in geojson_data['features']:
         python_id = feature['properties'].get('python_id')
         if python_id in statistiche_dict:
             data_to_update = {key: int(value) if isinstance(value, (np.int64, np.int32)) 
@@ -95,4 +95,4 @@ def calculate_statistics(quartieri_df, data):
                               for key, value in statistiche_dict[python_id].items()}
             feature['properties'].update(data_to_update)
 
-    return data
+    return geojson_data
