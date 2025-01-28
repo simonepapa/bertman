@@ -109,6 +109,12 @@ function Dashboard() {
   }, [endDate, filters.crimes, filters.quartieri, startDate]);
 
   useEffect(() => {
+    if (startDate === null) {
+      setEndDate(null);
+    }
+  }, [startDate]);
+
+  useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

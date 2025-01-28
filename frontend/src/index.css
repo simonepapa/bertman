@@ -41,7 +41,7 @@
 }
 
 .MuiCheckbox-root {
-  padding-right: 4px !important;
+  padding: 4px !important;
 }
 
 @media (min-width: 576px) {
@@ -52,6 +52,7 @@
 
 @media (min-width: 1200px) {
   .info-card {
+    position: absolute;
     bottom: unset;
     left: unset;
     transform: none;

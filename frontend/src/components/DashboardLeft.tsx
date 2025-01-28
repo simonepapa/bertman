@@ -1,13 +1,16 @@
 import PaletteDisplay from "./PaletteDisplay";
 import TileDisplay from "./TileDisplay";
+import InfoIcon from "@mui/icons-material/Info";
 import {
   Button,
   Checkbox,
   FormControl,
   FormControlLabel,
   FormGroup,
+  IconButton,
   Radio,
-  RadioGroup
+  RadioGroup,
+  Tooltip
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -70,109 +73,74 @@ function DashboardLeft({
     });
   };
 
-  const handleApplyFilters = () => {
-    fetchData();
+  const handleResetFilters = () => {
+    setFilters({
+      crimes: {
+        omicidio: 1,
+        omicidio_colposo: 1,
+        omicidio_stradale: 1,
+        tentato_omicidio: 1,
+        furto: 1,
+        rapina: 1,
+        violenza_sessuale: 1,
+        aggressione: 1,
+        spaccio: 1,
+        truffa: 1,
+        estorsione: 1,
+        contrabbando: 1,
+        associazione_di_tipo_mafioso: 1
+      },
+      quartieri: {
+        "bari-vecchia_san-nicola": 1,
+        carbonara: 1,
+        carrassi: 1,
+        "ceglie-del-campo": 1,
+        japigia: 1,
+        liberta: 1,
+        loseto: 1,
+        madonnella: 1,
+        murat: 1,
+        "palese-macchie": 1,
+        picone: 1,
+        "san-paolo": 1,
+        "san-pasquale": 1,
+        "santo-spirito": 1,
+        stanic: 1,
+        "torre-a-mare": 1,
+        "san-girolamo_fesca": 1
+      }
+    });
+    handleResetDate();
   };
 
   return (
     <div className="flex flex-col gap-10">
       <div className="flex flex-col gap-2">
-        <h2 className="text-3xl font-bold">Map style</h2>
-        <FormControl>
-          <label id="tiles-palette-label" className="text-lg font-medium">
-            Tiles palette
-          </label>
-          <RadioGroup
-            row={true}
-            aria-labelledby="tiles-palette-label"
-            name="row-radio-buttons-group">
-            <FormControlLabel
-              checked={palette === "red"}
-              value="red"
-              control={<Radio />}
-              label={<PaletteDisplay palette="red" />}
-              onClick={() => handlePaletteChange("red")}
-            />
-            <FormControlLabel
-              checked={palette === "blue"}
-              value="blue"
-              control={<Radio />}
-              label={<PaletteDisplay palette="blue" />}
-              onClick={() => handlePaletteChange("blue")}
-            />
-            <FormControlLabel
-              checked={palette === "green"}
-              value="green"
-              control={<Radio />}
-              label={<PaletteDisplay palette="green" />}
-              onClick={() => handlePaletteChange("green")}
-            />
-          </RadioGroup>
-        </FormControl>
-        <FormControl>
-          <label id="tiles-palette-label" className="mb-2 text-lg font-medium">
-            Tile style
-          </label>
-          <RadioGroup
-            row={true}
-            aria-labelledby="tiles-palette-label"
-            name="row-radio-buttons-group"
-            className="gap-2">
-            <FormControlLabel
-              checked={
-                tile === "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-              }
-              value="base"
-              control={<Radio />}
-              label={<TileDisplay style="base" />}
-              onClick={() =>
-                handleTileChange(
-                  "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-                )
-              }
-            />
-            <FormControlLabel
-              checked={
-                tile ===
-                "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              }
-              value="dark"
-              control={<Radio />}
-              label={<TileDisplay style="dark" />}
-              onClick={() =>
-                handleTileChange(
-                  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                )
-              }
-            />
-            <FormControlLabel
-              checked={
-                tile ===
-                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-              }
-              value="light"
-              control={<Radio />}
-              label={<TileDisplay style="light" />}
-              onClick={() =>
-                handleTileChange(
-                  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                )
-              }
-            />
-          </RadioGroup>
-        </FormControl>
-      </div>
-      <div className="flex flex-col gap-2">
         <div className="flex items-center gap-4">
           <h2 className="text-3xl font-bold">Data filters</h2>
-          <Button variant="contained" size="small" onClick={handleApplyFilters}>
-            Apply
+          <Button variant="contained" size="small" onClick={handleResetFilters}>
+            Reset to default
           </Button>
         </div>
-
         <div className="flex flex-col gap-8">
           <div className="flex flex-col gap-1">
-            <label className="text-lg font-medium">Filter by date range</label>
+            <div className="flex items-center gap-1">
+              <label className="text-lg font-medium">
+                Filter by date range
+              </label>
+              <Tooltip
+                title={
+                  <p className="text-sm">
+                    Select a range to limit the date range of the news. Note
+                    that this filter only works if you select both dates
+                  </p>
+                }>
+                <IconButton>
+                  <InfoIcon />
+                </IconButton>
+              </Tooltip>
+            </div>
+
             <div className="flex flex-col">
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DemoContainer components={["DatePicker", "DatePicker"]}>
@@ -183,6 +151,11 @@ function DashboardLeft({
                     onChange={(newDate: Dayjs | null) =>
                       handleChangeStartDate(newDate)
                     }
+                    slotProps={{
+                      field: {
+                        clearable: true
+                      }
+                    }}
                   />
                   <DatePicker
                     label="To"
@@ -191,25 +164,34 @@ function DashboardLeft({
                     disabled={startDate === null}
                     minDate={startDate !== null ? startDate : undefined}
                     onChange={(newDate) => setEndDate(newDate)}
+                    slotProps={{
+                      field: { clearable: true }
+                    }}
                   />
                 </DemoContainer>
               </LocalizationProvider>
-
-              <Button
-                variant="contained"
-                size="small"
-                onClick={handleResetDate}
-                className="!mt-2 w-fit self-end">
-                Reset date
-              </Button>
             </div>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-lg font-medium">Filter by crimes</label>
+            <div className="flex items-center gap-1">
+              <label className="text-lg font-medium">Filter by crimes</label>
+              <Tooltip
+                title={
+                  <p className="text-sm">
+                    Select which crimes to show. Please note that this will
+                    change the index's value
+                  </p>
+                }>
+                <IconButton>
+                  <InfoIcon />
+                </IconButton>
+              </Tooltip>
+            </div>
             <FormGroup className="flex !flex-row flex-wrap gap-3">
               <FormControlLabel
                 control={
                   <Checkbox
+                    size="small"
                     onChange={() => handleFiltersChange("omicidio", "crimes")}
                     checked={filters.crimes.omicidio === 1}
                   />
@@ -344,9 +326,22 @@ function DashboardLeft({
             </FormGroup>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-lg font-medium">
-              Filter by neighborhood
-            </label>
+            <div className="flex items-center gap-1">
+              <label className="text-lg font-medium">
+                Filter by neighborhood
+              </label>
+              <Tooltip
+                title={
+                  <p className="text-sm">
+                    Select which neighborhoods to show. Please note that this
+                    will change the index's value
+                  </p>
+                }>
+                <IconButton>
+                  <InfoIcon />
+                </IconButton>
+              </Tooltip>
+            </div>
             <FormGroup className="flex !flex-row flex-wrap gap-3">
               <FormControlLabel
                 control={
@@ -529,6 +524,98 @@ function DashboardLeft({
             </FormGroup>
           </div>
         </div>
+        <Button
+          variant="contained"
+          className="!mx-auto !mt-4 w-full sm:!mr-0 sm:!ml-auto sm:w-fit"
+          onClick={fetchData}>
+          Apply
+        </Button>
+      </div>
+      <div className="flex flex-col gap-2">
+        <h2 className="text-3xl font-bold">Map style</h2>
+        <FormControl>
+          <label id="tiles-palette-label" className="text-lg font-medium">
+            Tiles palette
+          </label>
+          <RadioGroup
+            row={true}
+            aria-labelledby="tiles-palette-label"
+            name="row-radio-buttons-group">
+            <FormControlLabel
+              checked={palette === "red"}
+              value="red"
+              control={<Radio />}
+              label={<PaletteDisplay palette="red" />}
+              onClick={() => handlePaletteChange("red")}
+            />
+            <FormControlLabel
+              checked={palette === "blue"}
+              value="blue"
+              control={<Radio />}
+              label={<PaletteDisplay palette="blue" />}
+              onClick={() => handlePaletteChange("blue")}
+            />
+            <FormControlLabel
+              checked={palette === "green"}
+              value="green"
+              control={<Radio />}
+              label={<PaletteDisplay palette="green" />}
+              onClick={() => handlePaletteChange("green")}
+            />
+          </RadioGroup>
+        </FormControl>
+        <FormControl>
+          <label id="tiles-palette-label" className="mb-2 text-lg font-medium">
+            Tile style
+          </label>
+          <RadioGroup
+            row={true}
+            aria-labelledby="tiles-palette-label"
+            name="row-radio-buttons-group"
+            className="gap-2">
+            <FormControlLabel
+              checked={
+                tile === "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+              }
+              value="base"
+              control={<Radio />}
+              label={<TileDisplay style="base" />}
+              onClick={() =>
+                handleTileChange(
+                  "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                )
+              }
+            />
+            <FormControlLabel
+              checked={
+                tile ===
+                "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              }
+              value="dark"
+              control={<Radio />}
+              label={<TileDisplay style="dark" />}
+              onClick={() =>
+                handleTileChange(
+                  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                )
+              }
+            />
+            <FormControlLabel
+              checked={
+                tile ===
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+              }
+              value="light"
+              control={<Radio />}
+              label={<TileDisplay style="light" />}
+              onClick={() =>
+                handleTileChange(
+                  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                )
+              }
+            />
+          </RadioGroup>
+        </FormControl>
       </div>
     </div>
   );
