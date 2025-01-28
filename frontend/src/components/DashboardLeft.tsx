@@ -523,6 +523,48 @@ function DashboardLeft({
               />
             </FormGroup>
           </div>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1">
+              <label className="text-lg font-medium">Weights</label>
+              <Tooltip
+                title={
+                  <p className="text-sm">
+                    Select the weights that will afflict the overall index score
+                  </p>
+                }>
+                <IconButton>
+                  <InfoIcon />
+                </IconButton>
+              </Tooltip>
+            </div>
+            <FormGroup className="flex !flex-row flex-wrap gap-3">
+              <div className="flex items-center">
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      onChange={() =>
+                        handleFiltersChange("num_of_articles", "weights")
+                      }
+                      checked={filters.weights["num_of_articles"] === 1}
+                    />
+                  }
+                  label="Number of articles"
+                  className="!mr-0"
+                />
+                <Tooltip
+                  title={
+                    <p className="text-sm">
+                      Divides the crime index by the total number of articles
+                      for that neighbrhood in the database
+                    </p>
+                  }>
+                  <IconButton>
+                    <InfoIcon />
+                  </IconButton>
+                </Tooltip>
+              </div>
+            </FormGroup>
+          </div>
         </div>
         <Button
           variant="contained"

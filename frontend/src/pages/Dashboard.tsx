@@ -47,6 +47,10 @@ function Dashboard() {
       stanic: 1,
       "torre-a-mare": 1,
       "san-girolamo_fesca": 1
+    },
+    weights: {
+      num_of_articles: 1,
+      per_population: 0
     }
   });
   const [tile, setTile] = useState<string>(
@@ -87,22 +91,35 @@ function Dashboard() {
     setIsLoading(true);
 
     try {
-      const endpoint =
-        startDate === null
-          ? `http://127.0.0.1:5000/get-data?crimes=${Object.keys(filters.crimes)
-              .filter((crime) => filters.crimes[crime] === 1)
-              .join(",")}&quartieri=${Object.keys(filters.quartieri)
-              .filter((quartiere) => filters.quartieri[quartiere] === 1)
-              .join(",")}`
-          : `http://127.0.0.1:5000/get-data?crimes=${Object.keys(filters.crimes)
-              .filter((crime) => filters.crimes[crime] === 1)
-              .join(",")}&quartieri=${Object.keys(filters.quartieri)
-              .filter((quartiere) => filters.quartieri[quartiere] === 1)
-              .join(
-                ","
-              )}&startDate=${dayjs(startDate).format("YYYY-MM-DD HH:mm:ss")}&endDate=${dayjs(endDate).format("YYYY-MM-DD HH:mm:ss")}`;
+      const queryParams = [];
 
-      const response = await fetch(endpoint);
+      const selectedCrimes = Object.keys(filters.crimes)
+        .filter((crime) => filters.crimes[crime] === 1)
+        .join(",");
+      queryParams.push(`crimes=${selectedCrimes}`);
+      const selectedQuartieri = Object.keys(filters.quartieri)
+        .filter((quartiere) => filters.quartieri[quartiere] === 1)
+        .join(",");
+      queryParams.push(`quartieri=${selectedQuartieri}`);
+
+      if (startDate) {
+        queryParams.push(
+          `startDate=${dayjs(startDate).format("YYYY-MM-DD HH:mm:ss")}`
+        );
+      }
+      if (endDate) {
+        queryParams.push(
+          `endDate=${dayjs(endDate).format("YYYY-MM-DD HH:mm:ss")}`
+        );
+      }
+      queryParams.push(
+        `${filters.weights.num_of_articles === 1 ? "weightsForArticles=true" : "weightsForArticles=false"}`
+      );
+      const queryString = queryParams.join("&");
+
+      const response = await fetch(
+        `http://127.0.0.1:5000/get-data?${queryString}`
+      );
 
       if (response.ok) {
         const jsonData = await response.json();
@@ -115,7 +132,13 @@ function Dashboard() {
     }
 
     setIsLoading(false);
-  }, [endDate, filters.crimes, filters.quartieri, startDate]);
+  }, [
+    endDate,
+    filters.crimes,
+    filters.quartieri,
+    filters.weights.num_of_articles,
+    startDate
+  ]);
 
   useEffect(() => {
     if (startDate === null) {
@@ -155,6 +178,7 @@ function Dashboard() {
           name={info.name}
           crime_index={info.crime_index}
           crimes={info.crimes}
+          weights={filters.weights}
         />
         {isLoading ? (
           <CircularProgress className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />

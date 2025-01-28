@@ -33,6 +33,7 @@ def get_data():
     endDate = request.args.get('endDate', default='')
     crimes = request.args.get('crimes', default='omicidio,omicidio_colposo,omicidio_stradale,tentato_omicidio,furto,rapina,violenza_sessuale,aggressione,spaccio,truffa,estorsione,associazione_di_tipo_mafioso').split(',')
     quartieri = request.args.get('quartieri', default='bari-vecchia_san-nicola,carbonara,carrassi,ceglie-del-campo,japigia,liberta,loseto,madonnella,murat,palese-macchie,picone,san-paolo,san-pasquale,santo-spirito,stanic,torre-a-mare,san-girolamo_fesca').split(',')
+    weightsForArticles = request.args.get('weightsForArticles', default='true')
 
     if len(crimes) <= 1 and crimes[0] == '': 
         crimes = 'omicidio,omicidio_colposo,omicidio_stradale,tentato_omicidio,furto,rapina,violenza_sessuale,aggressione,spaccio,truffa,estorsione,associazione_di_tipo_mafioso'
@@ -93,7 +94,7 @@ def get_data():
             geojson_data["features"].append(feature)
 
     # Analysis dei quartieri
-    geojson_data = analyze_quartieri(articles_df, quartieri_df, geojson_data, crimes)
+    geojson_data = analyze_quartieri(articles_df, quartieri_df, geojson_data, crimes, weightsForArticles)
 
     # Calculate statistics of quartieri
     geojson_data = calculate_statistics(quartieri_df, geojson_data)

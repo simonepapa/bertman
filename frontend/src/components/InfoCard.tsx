@@ -1,16 +1,27 @@
 import { getCrimeName } from "../helpers/utils";
-import { Divider } from "@mui/material";
+import { Chip, Divider } from "@mui/material";
 
 type Props = {
   name: string;
   crime_index: number | null;
   crimes: Crime[];
+  weights: {
+    [key: string]: number;
+  };
 };
 
-function InfoCard({ name, crime_index, crimes }: Props) {
+function InfoCard({ name, crime_index, crimes, weights }: Props) {
   return (
     <div className="info-card">
-      <h3 className="font-bold">{name}</h3>
+      {Object.keys(weights).some((weight: string) => weights[weight] === 1) && (
+        <div className="mb-2 flex flex-wrap gap-2">
+          <p className="text-base font-bold">Weights on:</p>
+          {weights.num_of_articles === 1 && (
+            <Chip color="primary" label="NO. OF ARTICLES" size="small" />
+          )}
+        </div>
+      )}
+      <h3 className="text-lg font-bold">{name || "Neighborhood"}</h3>
       <p>
         Crime index: {crime_index}
         <span className="text-text-secondary text-sm">

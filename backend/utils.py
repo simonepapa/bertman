@@ -3,7 +3,7 @@ import numpy as np
 import math
 from sklearn.preprocessing import MinMaxScaler
 
-def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes, weightsForArticles = True): 
+def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes, weightsForArticles = 'true'): 
     crimes = {
         "omicidio": 0,
         "omicidio_colposo": 0,
@@ -64,7 +64,7 @@ def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes, 
       indice_di_rischio_totale = sum(
           crime_data[crime]["crime_index"] for crime in crime_data
       )
-      if weightsForArticles:
+      if weightsForArticles == 'true':
         indice_di_rischio_totale = indice_di_rischio_totale / len(group_df.index) 
 
       # Save risk index in dataframe
