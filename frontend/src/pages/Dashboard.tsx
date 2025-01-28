@@ -189,7 +189,7 @@ function Dashboard() {
       </div>
       <div className="relative h-[800px] w-full bg-[#262626] xl:min-h-screen xl:w-[75%]">
         <ArrowCircleUpIcon
-          className="!sticky !top-8 !left-2 !h-12 !w-12 !text-white xl:!hidden"
+          className="!sticky !top-8 !left-2 !z-[10500] !h-12 !w-12 !text-white xl:!hidden"
           onClick={scrollToTop}
         />
         <InfoCard

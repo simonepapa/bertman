@@ -1,5 +1,6 @@
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
+import Solutions from "./pages/Solutions";
 import {
   createBrowserRouter,
   Navigate,
@@ -17,6 +18,14 @@ function App() {
       element: (
         <Navbar>
           <Dashboard />
+        </Navbar>
+      )
+    },
+    {
+      path: "/solutions",
+      element: (
+        <Navbar>
+          <Solutions />
         </Navbar>
       )
     }

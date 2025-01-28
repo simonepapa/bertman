@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import { ReactNode, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 type Props = {
   children: ReactNode;
@@ -58,14 +59,20 @@ function Navbar({ children, window }: Props) {
             </Typography>
             <Box className="!hidden sm:ml-4 sm:!block">
               <Button
+                component={Link}
+                to={"/dashboard"}
                 className={`!text-white !normal-case ${pathname === "/dashboard" ? "!font-bold" : "!font-normal"}`}>
                 Dashboard
               </Button>
               <Button
+                component={Link}
+                to={"/solutions"}
                 className={`!text-white !normal-case ${pathname === "/solutions" ? "!font-bold" : "!font-normal"}`}>
                 Solutions
               </Button>
               <Button
+                component={Link}
+                to={"/label-articles"}
                 className={`!text-white !normal-case ${pathname === "/label-articles" ? "!font-bold" : "!font-normal"}`}>
                 Label articles
               </Button>
@@ -95,26 +102,51 @@ function Navbar({ children, window }: Props) {
               <Divider />
               <List>
                 <ListItem disablePadding={true}>
-                  <ListItemButton sx={{ textAlign: "center" }}>
+                  <ListItemButton
+                    component={Link}
+                    to={"/dashboard"}
+                    sx={{ textAlign: "center" }}>
                     <ListItemText
                       primary={"Dashboard"}
-                      className={`!normal-case ${pathname === "/dashboard" ? "!font-bold" : "!font-normal"}`}
+                      sx={{
+                        textTransform: "none",
+                        span: {
+                          fontWeight: pathname === "/dashboard" ? "700" : "400"
+                        }
+                      }}
                     />
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding={true}>
-                  <ListItemButton sx={{ textAlign: "center" }}>
+                  <ListItemButton
+                    component={Link}
+                    to={"/solutions"}
+                    sx={{ textAlign: "center" }}>
                     <ListItemText
                       primary={"Solutions"}
-                      className={`!normal-case ${pathname === "/solutions" ? "!font-bold" : "!font-normal"}`}
+                      sx={{
+                        textTransform: "none",
+                        span: {
+                          fontWeight: pathname === "/solutions" ? "700" : "400"
+                        }
+                      }}
                     />
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding={true}>
-                  <ListItemButton sx={{ textAlign: "center" }}>
+                  <ListItemButton
+                    component={Link}
+                    to={"/label-articles"}
+                    sx={{ textAlign: "center" }}>
                     <ListItemText
                       primary={"Label articles"}
-                      className={`!normal-case ${pathname === "/label-articles" ? "!font-bold" : "!font-normal"}`}
+                      sx={{
+                        textTransform: "none",
+                        span: {
+                          fontWeight:
+                            pathname === "/label-articles" ? "700" : "400"
+                        }
+                      }}
                     />
                   </ListItemButton>
                 </ListItem>
