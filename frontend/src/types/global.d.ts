@@ -1,6 +1,6 @@
 type Crime = {
   crime: string;
-  index: number;
+  index: number | string;
   frequency: number;
 };
 

@@ -76,9 +76,7 @@ function ChoroplethMap({ setInfo, data, color }: Props) {
   const style = useCallback(
     (feature: Feature) => {
       return {
-        fillColor: getColor(
-          feature.properties?.crime_index_normalizzato_pesato
-        ),
+        fillColor: getColor(feature.properties?.crime_index_scalato),
         weight: 1,
         opacity: 1,
         color: "white",
@@ -98,7 +96,11 @@ function ChoroplethMap({ setInfo, data, color }: Props) {
         crimes = Object.keys(allCrimes).map((crimine) => {
           return {
             crime: crimine,
-            index: allCrimes[crimine].crime_index_normalizzato,
+            index: (
+              Math.round(
+                (allCrimes[crimine].crime_index + Number.EPSILON) * 100
+              ) / 100
+            ).toFixed(2),
             frequency: allCrimes[crimine].frequenza
           };
         });
@@ -174,8 +176,7 @@ function ChoroplethMap({ setInfo, data, color }: Props) {
 
       setInfo({
         name: e.target.feature.properties.name,
-        crime_index:
-          e.target.feature.properties.crime_index_normalizzato_pesato,
+        crime_index: e.target.feature.properties.crime_index_scalato,
         total_crimes: e.target.feature.properties.crimini_totali,
         crimes: crimes
       });

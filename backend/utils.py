@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
 import math
+from sklearn.preprocessing import MinMaxScaler
 
-def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes): 
+def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes, weightsForArticles = True): 
     crimes = {
         "omicidio": 0,
         "omicidio_colposo": 0,
@@ -41,13 +42,11 @@ def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes):
               if row[crime] == 1:
                   crime_data[crime]["frequenza"] += 1
 
-      # Normalized risk index
+      # Weighted risk index
       crimini_totali = sum([crime_data[crime]["frequenza"] for crime in crime_data])
       for crime in filtered_crimes.keys():
           risk_index = crime_data[crime]["frequenza"] * weights[crime]
-          crime_data[crime]["crime_index_normalizzato"] = round(
-              risk_index / crimini_totali if crimini_totali > 0 else 0, 2
-          )
+          crime_data[crime]["crime_index"] = risk_index
 
       # Add to GeoJSON
       for feature in geojson_data["features"]:
@@ -63,18 +62,21 @@ def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes):
       
       # Risk index by quartiere
       indice_di_rischio_totale = sum(
-          crime_data[crime]["frequenza"] * weights[crime] for crime in crime_data
+          crime_data[crime]["crime_index"] for crime in crime_data
       )
+      if weightsForArticles:
+        indice_di_rischio_totale = indice_di_rischio_totale / len(group_df.index) 
+
+      # Save risk index in dataframe
       quartieri_df.loc[quartieri_df['Quartiere'] == group, 'Indice di rischio'] = indice_di_rischio_totale
 
+    scaler = MinMaxScaler(feature_range=(0,100))
+    quartieri_df['Indice di rischio scalato'] = scaler.fit_transform(quartieri_df[['Indice di rischio']])
     return geojson_data
 
 
 def calculate_statistics(quartieri_df, geojson_data): 
-    indice_rischio_totale_di_tutti_i_quartieri = quartieri_df['Indice di rischio'].sum()
-
     statistiche_dict = {}
-    crime_index_normalizzato_pesato_values = []
 
     for index, row in quartieri_df.iterrows():
         if math.isnan(row['Peso quartiere']):
@@ -82,24 +84,14 @@ def calculate_statistics(quartieri_df, geojson_data):
 
         quartiere = row["Quartiere"]
         crimini_totali = row["Totale crimini"]
-        crime_index_normalizzato = float(row["Indice di rischio"] / indice_rischio_totale_di_tutti_i_quartieri)
-        crime_index_normalizzato_pesato = float((row["Indice di rischio"] / indice_rischio_totale_di_tutti_i_quartieri) * row["Peso quartiere"])
-
-        crime_index_normalizzato_pesato_values.append(crime_index_normalizzato_pesato)
+        crime_index = float(row["Indice di rischio"])
+        crime_index_scalato = float((row["Indice di rischio scalato"]))
         
         statistiche_dict[quartiere] = {
             "crimini_totali": crimini_totali,
-            "crime_index_normalizzato": round(crime_index_normalizzato, 2),
-            "crime_index_normalizzato_pesato": round(crime_index_normalizzato_pesato, 2),
+            "crime_index": round(crime_index, 2),
+            "crime_index_scalato": round(crime_index_scalato, 2),
         }
-
-    max_weighted_crime_index = max(crime_index_normalizzato_pesato_values)
-
-    # Update dictionary
-    for quartiere in statistiche_dict:
-        crime_index_normalizzato_pesato = statistiche_dict[quartiere]["crime_index_normalizzato_pesato"]
-        crime_index_normalizzato_pesato_normalizzato = (crime_index_normalizzato_pesato / max_weighted_crime_index) * 100
-        statistiche_dict[quartiere]["crime_index_normalizzato_pesato"] = round(crime_index_normalizzato_pesato_normalizzato, 2)
 
     for feature in geojson_data['features']:
         python_id = feature['properties'].get('python_id')

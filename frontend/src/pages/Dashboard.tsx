@@ -1,6 +1,8 @@
+import ChoroplethLegend from "../components/ChoroplethLegend";
 import ChoroplethMap from "../components/ChoroplethMap";
 import DashboardLeft from "../components/DashboardLeft";
 import InfoCard from "../components/InfoCard";
+import ArrowCircleUpIcon from "@mui/icons-material/ArrowCircleUp";
 import { CircularProgress } from "@mui/material";
 import dayjs, { Dayjs } from "dayjs";
 import { GeoJsonObject } from "geojson";
@@ -74,6 +76,13 @@ function Dashboard() {
     setEndDate(null);
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  };
+
   const fetchData = useCallback(async () => {
     setIsLoading(true);
 
@@ -138,6 +147,10 @@ function Dashboard() {
         />
       </div>
       <div className="relative h-[800px] w-full bg-[#262626] xl:min-h-screen xl:w-[75%]">
+        <ArrowCircleUpIcon
+          className="!sticky !top-8 !left-2 !h-12 !w-12 !text-white xl:!hidden"
+          onClick={scrollToTop}
+        />
         <InfoCard
           name={info.name}
           crime_index={info.crime_index}
@@ -156,6 +169,7 @@ function Dashboard() {
             <ChoroplethMap setInfo={setInfo} data={data} color={palette} />
           </MapContainer>
         )}
+        <ChoroplethLegend palette={palette} />
       </div>
     </div>
   );

@@ -44,6 +44,22 @@
   padding: 4px !important;
 }
 
+.legend-card {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: rgba(0, 0, 0, 1);
+  -webkit-transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  border-radius: 4px;
+  overflow: hidden;
+  width: fit-content;
+  height: fit-content;
+  z-index: 1500;
+  padding: 16px;
+  top: 16px;
+  right: 16px;
+}
+
 @media (min-width: 576px) {
   .info-card {
     max-width: 100%;
@@ -59,5 +75,11 @@
     top: 32px;
     right: 32px;
     max-width: 400px;
+  }
+
+  .legend-card {
+    top: unset;
+    bottom: 32px;
+    right: 32px;
   }
 }

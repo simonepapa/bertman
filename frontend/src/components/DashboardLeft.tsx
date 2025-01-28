@@ -535,12 +535,13 @@ function DashboardLeft({
         <h2 className="text-3xl font-bold">Map style</h2>
         <FormControl>
           <label id="tiles-palette-label" className="text-lg font-medium">
-            Tiles palette
+            Layers palette
           </label>
           <RadioGroup
             row={true}
             aria-labelledby="tiles-palette-label"
-            name="row-radio-buttons-group">
+            name="row-radio-buttons-group"
+            className="gap-8">
             <FormControlLabel
               checked={palette === "red"}
               value="red"
