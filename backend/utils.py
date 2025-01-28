@@ -3,7 +3,27 @@ import numpy as np
 import math
 from sklearn.preprocessing import MinMaxScaler
 
-def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes, weightsForArticles = 'true'): 
+number_of_people = {
+    "bari-vecchia_san-nicola": 5726,
+    "carbonara": 22625,
+    "carrassi": 34248,
+    "ceglie-del-campo": 5018,
+    "japigia": 30153,
+    "liberta": 38701,
+    "loseto": 7580,
+    "madonnella": 10680,
+    "murat": 29638,
+    "palese-macchie": 7315,
+    "picone": 40225,
+    "san-paolo": 27990,
+    "san-pasquale": 18313,
+    "santo-spirito": 1858,
+    "stanic": 4489,
+    "torre-a-mare": 5070,
+    "san-girolamo_fesca": 4721,
+}
+
+def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes, weightsForArticles = 'true', weightsForPeople = 'false'): 
     crimes = {
         "omicidio": 0,
         "omicidio_colposo": 0,
@@ -66,12 +86,18 @@ def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes, 
       )
       if weightsForArticles == 'true':
         indice_di_rischio_totale = indice_di_rischio_totale / len(group_df.index) 
+      if weightsForPeople == 'true':
+        indice_di_rischio_totale = indice_di_rischio_totale / number_of_people[group]
 
       # Save risk index in dataframe
       quartieri_df.loc[quartieri_df['Quartiere'] == group, 'Indice di rischio'] = indice_di_rischio_totale
 
     scaler = MinMaxScaler(feature_range=(0,100))
     quartieri_df['Indice di rischio scalato'] = scaler.fit_transform(quartieri_df[['Indice di rischio']])
+
+    geojson_data["weightsForArticles"] = weightsForArticles
+    geojson_data["weightsForPeople"] = weightsForPeople
+
     return geojson_data
 
 
@@ -91,6 +117,7 @@ def calculate_statistics(quartieri_df, geojson_data):
             "crimini_totali": crimini_totali,
             "crime_index": round(crime_index, 2),
             "crime_index_scalato": round(crime_index_scalato, 2),
+            "population": number_of_people[quartiere]
         }
 
     for feature in geojson_data['features']:

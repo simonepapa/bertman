@@ -50,7 +50,7 @@ function Dashboard() {
     },
     weights: {
       num_of_articles: 1,
-      per_population: 0
+      num_of_people: 0
     }
   });
   const [tile, setTile] = useState<string>(
@@ -61,7 +61,12 @@ function Dashboard() {
     name: "",
     crime_index: null,
     total_crimes: null,
-    crimes: []
+    population: 0,
+    crimes: [],
+    weights: {
+      num_of_articles: "false",
+      num_of_people: "false"
+    }
   });
   const [data, setData] = useState<GeoJsonObject | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -115,6 +120,9 @@ function Dashboard() {
       queryParams.push(
         `${filters.weights.num_of_articles === 1 ? "weightsForArticles=true" : "weightsForArticles=false"}`
       );
+      queryParams.push(
+        `${filters.weights.num_of_people === 1 ? "weightsForPeople=true" : "weightsForPeople=false"}`
+      );
       const queryString = queryParams.join("&");
 
       const response = await fetch(
@@ -124,6 +132,15 @@ function Dashboard() {
       if (response.ok) {
         const jsonData = await response.json();
         setData(jsonData);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setInfo((prevState: any) => ({
+          ...prevState,
+          weights: {
+            num_of_articles: jsonData.weightsForArticles,
+            num_of_people: jsonData.weightsForPeople
+          }
+        }));
       } else {
         console.error("Response error", response.status);
       }
@@ -137,6 +154,7 @@ function Dashboard() {
     filters.crimes,
     filters.quartieri,
     filters.weights.num_of_articles,
+    filters.weights.num_of_people,
     startDate
   ]);
 
@@ -150,7 +168,7 @@ function Dashboard() {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
+  console.log(data);
   return (
     <div className="flex flex-col gap-8 xl:flex-row xl:gap-0">
       <div className="h-fit w-full p-4 xl:min-h-screen xl:w-[25%]">
@@ -178,7 +196,8 @@ function Dashboard() {
           name={info.name}
           crime_index={info.crime_index}
           crimes={info.crimes}
-          weights={filters.weights}
+          weights={info.weights || null}
+          population={info.population}
         />
         {isLoading ? (
           <CircularProgress className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
@@ -190,7 +209,12 @@ function Dashboard() {
             zoom={12}
             scrollWheelZoom={true}>
             <TileLayer url={tile} />
-            <ChoroplethMap setInfo={setInfo} data={data} color={palette} />
+            <ChoroplethMap
+              setInfo={setInfo}
+              data={data}
+              color={palette}
+              weights={info.weights || null}
+            />
           </MapContainer>
         )}
         <ChoroplethLegend palette={palette} />

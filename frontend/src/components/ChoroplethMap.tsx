@@ -7,9 +7,10 @@ type Props = {
   setInfo: Dispatch<SetStateAction<InfoQuartiere>>;
   data: GeoJsonObject | null;
   color: string;
+  weights: { [key: string]: string } | null;
 };
 
-function ChoroplethMap({ setInfo, data, color }: Props) {
+function ChoroplethMap({ setInfo, data, color, weights }: Props) {
   const map = useMap();
 
   const getColor = useCallback(
@@ -178,7 +179,11 @@ function ChoroplethMap({ setInfo, data, color }: Props) {
         name: e.target.feature.properties.name,
         crime_index: e.target.feature.properties.crime_index_scalato,
         total_crimes: e.target.feature.properties.crimini_totali,
-        crimes: crimes
+        population: e.target.feature.properties.population,
+        crimes: crimes,
+        ...(weights && {
+          weights: weights
+        })
       });
 
       const layer = e.target;
@@ -191,7 +196,7 @@ function ChoroplethMap({ setInfo, data, color }: Props) {
 
       layer.bringToFront();
     },
-    [setInfo]
+    [setInfo, weights]
   );
 
   const resetHighlight = useCallback(
@@ -200,12 +205,16 @@ function ChoroplethMap({ setInfo, data, color }: Props) {
         name: "",
         crime_index: null,
         total_crimes: null,
-        crimes: []
+        population: 0,
+        crimes: [],
+        ...(weights && {
+          weights: weights
+        })
       });
 
       e.target.setStyle(style(e.target.feature));
     },
-    [setInfo, style]
+    [setInfo, style, weights]
   );
 
   const zoomToFeature = useCallback(

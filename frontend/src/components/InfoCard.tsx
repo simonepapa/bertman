@@ -4,35 +4,47 @@ import { Chip, Divider } from "@mui/material";
 type Props = {
   name: string;
   crime_index: number | null;
+  population: number;
   crimes: Crime[];
-  weights: {
-    [key: string]: number;
-  };
+  weights: { [key: string]: string } | null;
 };
 
-function InfoCard({ name, crime_index, crimes, weights }: Props) {
+function InfoCard({ name, crime_index, population, crimes, weights }: Props) {
+  const numberOfCrimes = crimes.reduce(
+    (acc: number, crime: Crime) => acc + crime.frequency,
+    0
+  );
+
   return (
     <div className="info-card">
-      {Object.keys(weights).some((weight: string) => weights[weight] === 1) && (
-        <div className="mb-2 flex flex-wrap gap-2">
-          <p className="text-base font-bold">Weights on:</p>
-          {weights.num_of_articles === 1 && (
-            <Chip color="primary" label="NO. OF ARTICLES" size="small" />
-          )}
-        </div>
-      )}
+      {weights &&
+        Object.keys(weights).some(
+          (weight: string) => weights[weight] === "true"
+        ) && (
+          <div className="mb-2 flex flex-wrap gap-2">
+            <p className="text-base font-bold">Weights on:</p>
+            {weights.num_of_articles === "true" && (
+              <Chip color="primary" label="NO. OF ARTICLES" size="small" />
+            )}
+            {weights.num_of_people === "true" && (
+              <Chip color="primary" label="NO. OF PEOPLE" size="small" />
+            )}
+          </div>
+        )}
       <h3 className="text-lg font-bold">{name || "Neighborhood"}</h3>
       <p>
         Crime index: {crime_index}
         <span className="text-text-secondary text-sm">
           {" "}
-          -{" "}
-          {crimes.reduce(
-            (acc: number, crime: Crime) => acc + crime.frequency,
-            0
-          )}{" "}
-          cases
+          - {population.toLocaleString("it-IT")} people
         </span>
+      </p>
+      <p className="text-text-secondary text-sm">
+        {numberOfCrimes} cases,{" "}
+        {!isNaN(Math.round((numberOfCrimes / population) * 1000))
+          ? Math.round((numberOfCrimes / population) * 1000)
+          : 0}{" "}
+        crimes per 1000 people
       </p>
       <Divider className="!my-2" />
       <div className="flex gap-2 overflow-auto !p-0 xl:flex-col">

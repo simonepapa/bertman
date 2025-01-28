@@ -555,7 +555,32 @@ function DashboardLeft({
                   title={
                     <p className="text-sm">
                       Divides the crime index by the total number of articles
-                      for that neighbrhood in the database
+                      for that neighborhood in the database
+                    </p>
+                  }>
+                  <IconButton>
+                    <InfoIcon />
+                  </IconButton>
+                </Tooltip>
+              </div>
+              <div className="flex items-center">
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      onChange={() =>
+                        handleFiltersChange("num_of_people", "weights")
+                      }
+                      checked={filters.weights["num_of_people"] === 1}
+                    />
+                  }
+                  label="Number of people"
+                  className="!mr-0"
+                />
+                <Tooltip
+                  title={
+                    <p className="text-sm">
+                      Divides the crime index by the number of people for that
+                      neighborhood
                     </p>
                   }>
                   <IconButton>
