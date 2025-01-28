@@ -29,9 +29,16 @@ def get_data():
     }
 
     # Input parameters
-    date = request.args.get('date', default='')
+    startDate = request.args.get('startDate', default='')
+    endDate = request.args.get('endDate', default='')
     crimes = request.args.get('crimes', default='omicidio,omicidio_colposo,omicidio_stradale,tentato_omicidio,furto,rapina,violenza_sessuale,aggressione,spaccio,truffa,estorsione,associazione_di_tipo_mafioso').split(',')
     quartieri = request.args.get('quartieri', default='bari-vecchia_san-nicola,carbonara,carrassi,ceglie-del-campo,japigia,liberta,loseto,madonnella,murat,palese-macchie,picone,san-paolo,san-pasquale,santo-spirito,stanic,torre-a-mare,san-girolamo_fesca').split(',')
+
+    if len(crimes) <= 1 and crimes[0] == '': 
+        crimes = 'omicidio,omicidio_colposo,omicidio_stradale,tentato_omicidio,furto,rapina,violenza_sessuale,aggressione,spaccio,truffa,estorsione,associazione_di_tipo_mafioso'
+
+    if len(quartieri) <= 1 and quartieri[0] == '': 
+        quartieri = 'bari-vecchia_san-nicola,carbonara,carrassi,ceglie-del-campo,japigia,liberta,loseto,madonnella,murat,palese-macchie,picone,san-paolo,san-pasquale,santo-spirito,stanic,torre-a-mare,san-girolamo_fesca'
 
     quartieri_array = list(map(str, quartieri))
 
@@ -52,7 +59,15 @@ def get_data():
     quartieri_df = pd.DataFrame(quartieri_data)
 
     # Read all articles from the database
-    articles_df = pd.read_sql_query("SELECT * FROM articles", conn)
+    if startDate == '' and endDate == '':
+        articles_df = pd.read_sql_query("SELECT * FROM articles", conn)
+    else:
+        query = f"""
+            SELECT * 
+            FROM articles 
+            WHERE date BETWEEN '{startDate}' AND '{endDate}'
+            """
+        articles_df = pd.read_sql_query(query, conn)
 
     # Add features to GeoJSON
     with open("data/quartieri.json", "r", encoding="utf-8") as file:

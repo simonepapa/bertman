@@ -1,21 +1,28 @@
-import { getCrimeName } from "../../helpers/utils";
+import { getCrimeName } from "../helpers/utils";
 import { Divider } from "@mui/material";
 
 type Props = {
   name: string;
   crime_index: number | null;
-  crimes: {
-    crime: string;
-    index: number;
-    frequency: number;
-  }[];
+  crimes: Crime[];
 };
 
 function InfoCard({ name, crime_index, crimes }: Props) {
   return (
     <div className="info-card">
       <h3 className="font-bold">{name}</h3>
-      <p>Crime index: {crime_index}</p>
+      <p>
+        Crime index: {crime_index}
+        <span className="text-text-secondary text-sm">
+          {" "}
+          -{" "}
+          {crimes.reduce(
+            (acc: number, crime: Crime) => acc + crime.frequency,
+            0
+          )}{" "}
+          cases
+        </span>
+      </p>
       <Divider className="!my-2" />
       <div className="flex gap-2 overflow-auto !p-0 xl:flex-col">
         {Object.keys(crimes).map((crime: string, index: number) => (

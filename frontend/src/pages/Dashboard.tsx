@@ -1,19 +1,52 @@
 import ChoroplethMap from "../components/ChoroplethMap";
-import PaletteDisplay from "../components/PaletteDisplay";
-import TileDisplay from "../components/TileDisplay";
-import InfoCard from "../components/ui/InfoCard";
-import {
-  CircularProgress,
-  FormControl,
-  FormControlLabel,
-  Radio,
-  RadioGroup
-} from "@mui/material";
+import DashboardLeft from "../components/DashboardLeft";
+import InfoCard from "../components/InfoCard";
+import { CircularProgress } from "@mui/material";
+import dayjs, { Dayjs } from "dayjs";
+import { GeoJsonObject } from "geojson";
 import { LatLngExpression } from "leaflet";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
 
 function Dashboard() {
+  const [filters, setFilters] = useState<{
+    [key: string]: { [key: string]: number };
+  }>({
+    crimes: {
+      omicidio: 1,
+      omicidio_colposo: 1,
+      omicidio_stradale: 1,
+      tentato_omicidio: 1,
+      furto: 1,
+      rapina: 1,
+      violenza_sessuale: 1,
+      aggressione: 1,
+      spaccio: 1,
+      truffa: 1,
+      estorsione: 1,
+      contrabbando: 1,
+      associazione_di_tipo_mafioso: 1
+    },
+    quartieri: {
+      "bari-vecchia_san-nicola": 1,
+      carbonara: 1,
+      carrassi: 1,
+      "ceglie-del-campo": 1,
+      japigia: 1,
+      liberta: 1,
+      loseto: 1,
+      madonnella: 1,
+      murat: 1,
+      "palese-macchie": 1,
+      picone: 1,
+      "san-paolo": 1,
+      "san-pasquale": 1,
+      "santo-spirito": 1,
+      stanic: 1,
+      "torre-a-mare": 1,
+      "san-girolamo_fesca": 1
+    }
+  });
   const [tile, setTile] = useState<string>(
     "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
   );
@@ -24,133 +57,79 @@ function Dashboard() {
     total_crimes: null,
     crimes: []
   });
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<GeoJsonObject | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [startDate, setStartDate] = useState<Dayjs | null>(null);
+  const [endDate, setEndDate] = useState<Dayjs | null>(null);
 
   const position: LatLngExpression = [41.117143, 16.871871];
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
+  const handleChangeStartDate = (newDate: Dayjs | null) => {
+    setStartDate(newDate);
+    setEndDate(dayjs());
+  };
 
-      try {
-        const response = await fetch("http://127.0.0.1:5000/get-data");
+  const handleResetDate = () => {
+    setStartDate(null);
+    setEndDate(null);
+  };
 
-        if (response.ok) {
-          const jsonData = await response.json();
-          setData(jsonData);
-        } else {
-          console.error("Response error", response.status);
-        }
-      } catch (error) {
-        console.error("Request error", error);
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+
+    try {
+      const endpoint =
+        startDate === null
+          ? `http://127.0.0.1:5000/get-data?crimes=${Object.keys(filters.crimes)
+              .filter((crime) => filters.crimes[crime] === 1)
+              .join(",")}&quartieri=${Object.keys(filters.quartieri)
+              .filter((quartiere) => filters.quartieri[quartiere] === 1)
+              .join(",")}`
+          : `http://127.0.0.1:5000/get-data?crimes=${Object.keys(filters.crimes)
+              .filter((crime) => filters.crimes[crime] === 1)
+              .join(",")}&quartieri=${Object.keys(filters.quartieri)
+              .filter((quartiere) => filters.quartieri[quartiere] === 1)
+              .join(
+                ","
+              )}&startDate=${dayjs(startDate).format("YYYY-MM-DD HH:mm:ss")}&endDate=${dayjs(endDate).format("YYYY-MM-DD HH:mm:ss")}`;
+
+      const response = await fetch(endpoint);
+
+      if (response.ok) {
+        const jsonData = await response.json();
+        setData(jsonData);
+      } else {
+        console.error("Response error", response.status);
       }
+    } catch (error) {
+      console.error("Request error", error);
+    }
 
-      setIsLoading(false);
-    };
+    setIsLoading(false);
+  }, [endDate, filters.crimes, filters.quartieri, startDate]);
 
+  useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const handleTileChange = (style: string) => {
-    setTile(style);
-  };
-
-  const handlePaletteChange = (color: string) => {
-    setPalette(color);
-  };
 
   return (
     <div className="flex flex-col gap-8 xl:flex-row xl:gap-0">
       <div className="h-fit w-full p-4 xl:min-h-screen xl:w-[25%]">
-        <div className="flex flex-col gap-3">
-          <h2 className="text-3xl font-bold">Map style</h2>
-          <FormControl>
-            <label id="tiles-palette-label" className="text-lg font-medium">
-              Tiles palette
-            </label>
-            <RadioGroup
-              row={true}
-              aria-labelledby="tiles-palette-label"
-              name="row-radio-buttons-group">
-              <FormControlLabel
-                checked={palette === "red"}
-                value="red"
-                control={<Radio />}
-                label={<PaletteDisplay palette="red" />}
-                onClick={() => handlePaletteChange("red")}
-              />
-              <FormControlLabel
-                checked={palette === "blue"}
-                value="blue"
-                control={<Radio />}
-                label={<PaletteDisplay palette="blue" />}
-                onClick={() => handlePaletteChange("blue")}
-              />
-              <FormControlLabel
-                checked={palette === "green"}
-                value="green"
-                control={<Radio />}
-                label={<PaletteDisplay palette="green" />}
-                onClick={() => handlePaletteChange("green")}
-              />
-            </RadioGroup>
-          </FormControl>
-          <FormControl>
-            <label
-              id="tiles-palette-label"
-              className="mb-2 text-lg font-medium">
-              Tile style
-            </label>
-            <RadioGroup
-              row={true}
-              aria-labelledby="tiles-palette-label"
-              name="row-radio-buttons-group"
-              className="gap-2">
-              <FormControlLabel
-                checked={
-                  tile === "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-                }
-                value="base"
-                control={<Radio />}
-                label={<TileDisplay style="base" />}
-                onClick={() =>
-                  handleTileChange(
-                    "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  )
-                }
-              />
-              <FormControlLabel
-                checked={
-                  tile ===
-                  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                }
-                value="dark"
-                control={<Radio />}
-                label={<TileDisplay style="dark" />}
-                onClick={() =>
-                  handleTileChange(
-                    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                  )
-                }
-              />
-              <FormControlLabel
-                checked={
-                  tile ===
-                  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                }
-                value="light"
-                control={<Radio />}
-                label={<TileDisplay style="light" />}
-                onClick={() =>
-                  handleTileChange(
-                    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                  )
-                }
-              />
-            </RadioGroup>
-          </FormControl>
-        </div>
+        <DashboardLeft
+          palette={palette}
+          setPalette={setPalette}
+          tile={tile}
+          setTile={setTile}
+          filters={filters}
+          setFilters={setFilters}
+          fetchData={fetchData}
+          startDate={startDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          handleChangeStartDate={handleChangeStartDate}
+          handleResetDate={handleResetDate}
+        />
       </div>
       <div className="relative h-[800px] w-full bg-[#262626] xl:min-h-screen xl:w-[75%]">
         <InfoCard

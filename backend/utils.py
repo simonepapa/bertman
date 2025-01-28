@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import math
 
 def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes): 
     crimes = {
@@ -76,6 +77,9 @@ def calculate_statistics(quartieri_df, geojson_data):
     crime_index_normalizzato_pesato_values = []
 
     for index, row in quartieri_df.iterrows():
+        if math.isnan(row['Peso quartiere']):
+            row['Peso quartiere'] = 1.0
+
         quartiere = row["Quartiere"]
         crimini_totali = row["Totale crimini"]
         crime_index_normalizzato = float(row["Indice di rischio"] / indice_rischio_totale_di_tutti_i_quartieri)

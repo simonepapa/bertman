@@ -40,6 +40,10 @@
   transform: translateX(-50%);
 }
 
+.MuiCheckbox-root {
+  padding-right: 4px !important;
+}
+
 @media (min-width: 576px) {
   .info-card {
     max-width: 100%;

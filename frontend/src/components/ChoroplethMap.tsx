@@ -82,14 +82,86 @@ function ChoroplethMap({ setInfo, data, color }: Props) {
   };
 
   const highlightFeature = (e: LeafletMouseEvent) => {
+    let crimes: Crime[] = [];
+
     const allCrimes = e.target.feature.properties.crimini;
-    const crimes = Object.keys(allCrimes).map((crimine) => {
-      return {
-        crime: crimine,
-        index: allCrimes[crimine].crime_index_normalizzato,
-        frequency: allCrimes[crimine].frequenza
-      };
-    });
+    if (allCrimes !== undefined) {
+      crimes = Object.keys(allCrimes).map((crimine) => {
+        return {
+          crime: crimine,
+          index: allCrimes[crimine].crime_index_normalizzato,
+          frequency: allCrimes[crimine].frequenza
+        };
+      });
+    } else {
+      crimes = [
+        {
+          crime: "aggressione",
+          index: 0,
+          frequency: 0
+        },
+        {
+          crime: "associazione_di_tipo_mafioso",
+          index: 0,
+          frequency: 0
+        },
+        {
+          crime: "contrabbando",
+          index: 0,
+          frequency: 0
+        },
+        {
+          crime: "estorsione",
+          index: 0,
+          frequency: 0
+        },
+        {
+          crime: "furto",
+          index: 0,
+          frequency: 0
+        },
+        {
+          crime: "omicidio",
+          index: 0,
+          frequency: 0
+        },
+        {
+          crime: "omicidio_colposo",
+          index: 0,
+          frequency: 0
+        },
+        {
+          crime: "omicidio_stradale",
+          index: 0,
+          frequency: 0
+        },
+        {
+          crime: "rapina",
+          index: 0,
+          frequency: 0
+        },
+        {
+          crime: "spaccio",
+          index: 0,
+          frequency: 0
+        },
+        {
+          crime: "tentato_omicidio",
+          index: 0,
+          frequency: 0
+        },
+        {
+          crime: "truffa",
+          index: 0,
+          frequency: 0
+        },
+        {
+          crime: "violenza_sessuale",
+          index: 0,
+          frequency: 0
+        }
+      ];
+    }
 
     setInfo({
       name: e.target.feature.properties.name,
