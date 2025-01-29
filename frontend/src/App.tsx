@@ -1,5 +1,6 @@
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
+import ReadArticles from "./pages/ReadArticles";
 import Solutions from "./pages/Solutions";
 import {
   createBrowserRouter,
@@ -26,6 +27,14 @@ function App() {
       element: (
         <Navbar>
           <Solutions />
+        </Navbar>
+      )
+    },
+    {
+      path: "/read-articles",
+      element: (
+        <Navbar>
+          <ReadArticles />
         </Navbar>
       )
     }

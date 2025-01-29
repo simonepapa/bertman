@@ -105,6 +105,35 @@ def get_data():
 
     return jsonify(geojson_data)
 
+@app.route('/get-articles', methods=['GET'])
+def get_articles():
+    # Connect to database
+    conn = sqlite3.connect("database.db")
+
+    articles_df = pd.read_sql_query("SELECT * FROM articles", conn)
+
+    conn.close()
+
+    return json.dumps(json.loads(articles_df.to_json(orient="records")))
+
+@app.route('/get-article', methods=['GET'])
+def get_articles():
+    # Connect to database
+    conn = sqlite3.connect("database.db")
+
+    id = request.args.get('id', default='')
+
+    query = f"""
+            SELECT * 
+            FROM articles 
+            WHERE id = '{id}'
+            """
+    article = pd.read_sql_query(query, conn)
+
+    conn.close()
+
+    return article
+
 
 if __name__ == '__main__':
     app.run(debug=True)

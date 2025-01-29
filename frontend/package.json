@@ -17,6 +17,7 @@
     "@heroicons/react": "^2.2.0",
     "@mui/material": "^6.4.1",
     "@mui/x-date-pickers": "^7.24.1",
+    "@mui/x-tree-view": "^7.24.1",
     "@tailwindcss/vite": "^4.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "date-range-picker-mui": "^1.0.11",

@@ -72,6 +72,12 @@ function Navbar({ children, window }: Props) {
               </Button>
               <Button
                 component={Link}
+                to={"/read-articles"}
+                className={`!text-white !normal-case ${pathname === "/read-articles" ? "!font-bold" : "!font-normal"}`}>
+                Read articles
+              </Button>
+              <Button
+                component={Link}
                 to={"/label-articles"}
                 className={`!text-white !normal-case ${pathname === "/label-articles" ? "!font-bold" : "!font-normal"}`}>
                 Label articles
@@ -128,6 +134,23 @@ function Navbar({ children, window }: Props) {
                         textTransform: "none",
                         span: {
                           fontWeight: pathname === "/solutions" ? "700" : "400"
+                        }
+                      }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding={true}>
+                  <ListItemButton
+                    component={Link}
+                    to={"/read-articles"}
+                    sx={{ textAlign: "center" }}>
+                    <ListItemText
+                      primary={"Read articles"}
+                      sx={{
+                        textTransform: "none",
+                        span: {
+                          fontWeight:
+                            pathname === "/read-articles" ? "700" : "400"
                         }
                       }}
                     />

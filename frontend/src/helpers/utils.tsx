@@ -92,3 +92,27 @@ export const colorizeSquare = (index: number, palette: string) => {
 
   return colors[index];
 };
+
+export const getQuartiereName = (label: string) => {
+  const names: { [key: string]: string } = {
+    "bari-vecchia_san-nicola": "Bari Vecchia - San Nicola",
+    carbonara: "Carbonara",
+    carrassi: "Carrassi",
+    "ceglie-del-campo": "Ceglie del Campo",
+    japigia: "Japigia",
+    liberta: "Libertà",
+    loseto: "Loseto",
+    madonnella: "Madonnella",
+    murat: "Murat",
+    "palese-macchie": "Palese - Macchie",
+    picone: "Picone",
+    "san-girolamo_fesca": "San Girolamo - Fesca",
+    "san-paolo": "San Paolo",
+    "san-pasquale": "San Pasquale",
+    "santo-spirito": "Santo Spirito",
+    stanic: "Stanic",
+    "torre-a-mare": "Torre a mare"
+  };
+
+  return names[label];
+};

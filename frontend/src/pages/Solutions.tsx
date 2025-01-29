@@ -24,7 +24,7 @@ function Solutions() {
   return (
     <div className="mt-8 mb-12 flex flex-col gap-8 px-4 xl:mx-12 xl:flex-row xl:px-0">
       <div className="flex-shrink-0 xl:w-[50%]">
-        <h1 className="mb-4 text-xl font-bold">
+        <h1 className="mb-4 text-2xl font-bold">
           Smart solutions to minimize crime
         </h1>
         <Accordion>
