@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "host": "vite --host",
     "build": "tsc -b && vite build",
     "lint": "eslint src/**/*.{js,jsx,ts,tsx} --report-unused-disable-directives",
     "preview": "vite preview",
@@ -16,6 +17,7 @@
     "@emotion/styled": "^11.14.0",
     "@heroicons/react": "^2.2.0",
     "@mui/material": "^6.4.1",
+    "@mui/x-charts": "^7.24.1",
     "@mui/x-date-pickers": "^7.24.1",
     "@mui/x-tree-view": "^7.24.1",
     "@tailwindcss/vite": "^4.0.0",

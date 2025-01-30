@@ -108,13 +108,17 @@ function DashboardLeft({
         stanic: 1,
         "torre-a-mare": 1,
         "san-girolamo_fesca": 1
+      },
+      weights: {
+        num_of_articles: 1,
+        num_of_people: 0
       }
     });
     handleResetDate();
   };
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="dashboard-left flex flex-col gap-10 xl:pr-4">
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-4">
           <h2 className="text-3xl font-bold">Data filters</h2>

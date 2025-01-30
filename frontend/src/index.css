@@ -90,8 +90,11 @@
   }
 
   .legend-card {
-    top: unset;
-    bottom: 32px;
-    right: 32px;
+    top: 32px;
+    left: 64px;
+  }
+
+  .dashboard-left {
+    border-right: 1px solid black;
   }
 }

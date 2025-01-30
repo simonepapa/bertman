@@ -116,3 +116,27 @@ export const getQuartiereName = (label: string) => {
 
   return names[label];
 };
+
+export const getQuartiereIndex = (label: string) => {
+  const names: { [key: string]: string } = {
+    "Bari Vecchia - San Nicola": "bari-vecchia_san-nicola",
+    Carbonara: "carbonara",
+    Carrassi: "carrassi",
+    "Ceglie del Campo": "ceglie-del-campo",
+    Japigia: "japigia",
+    Libertà: "liberta",
+    Loseto: "loseto",
+    Madonnella: "madonnella",
+    Murat: "murat",
+    "Palese - Macchie": "palese-macchie",
+    Picone: "picone",
+    "San Girolamo - Fesca": "san-girolamo_fesca",
+    "San Paolo": "san-paolo",
+    "San Pasquale": "san-pasquale",
+    "Santo Spirito": "santo-spirito",
+    Stanic: "stanic",
+    "Torre a mare": "torre-a-mare"
+  };
+
+  return names[label];
+};

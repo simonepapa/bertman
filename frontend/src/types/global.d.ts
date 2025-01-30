@@ -1,3 +1,5 @@
+import { TreeViewBaseItem } from "@mui/x-tree-view/models";
+
 type Crime = {
   crime: string;
   index: number | string;
@@ -59,3 +61,16 @@ type LabeledArticle = {
     value: number;
   };
 };
+
+interface CustomTreeItem extends TreeViewBaseItem {
+  url?: string;
+  date?: string;
+  children?: {
+    id: string;
+    label: string;
+    url?: string;
+    date?: string;
+    isLastChild?: boolean;
+    children?: CustomTreeItem[];
+  }[];
+}

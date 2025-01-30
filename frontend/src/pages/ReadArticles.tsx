@@ -1,4 +1,5 @@
 import { getCrimeName, getQuartiereName } from "../helpers/utils";
+import { Article, CustomTreeItem } from "../types/global";
 import {
   CircularProgress,
   Divider,
@@ -7,7 +8,6 @@ import {
   ListItemText
 } from "@mui/material";
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
-import { TreeViewBaseItem } from "@mui/x-tree-view/models";
 import { MouseEvent, useCallback, useEffect, useState } from "react";
 
 function ReadArticles() {
@@ -15,19 +15,6 @@ function ReadArticles() {
   const [article, setArticle] = useState<Article | null>(null);
   const [items, setItems] = useState<CustomTreeItem[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  interface CustomTreeItem extends TreeViewBaseItem {
-    url?: string;
-    date?: string;
-    children?: {
-      id: string;
-      label: string;
-      url?: string;
-      date?: string;
-      isLastChild?: boolean;
-      children?: CustomTreeItem[];
-    }[];
-  }
 
   const fetchArticles = useCallback(async () => {
     setIsLoading(true);
@@ -189,6 +176,8 @@ function ReadArticles() {
     fetchArticles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  console.log(items);
 
   return (
     <div className="mt-8 mb-12 flex flex-col gap-8 px-4 xl:mx-12 xl:flex-row xl:px-0">
