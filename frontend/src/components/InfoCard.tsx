@@ -1,4 +1,5 @@
 import { getCrimeName } from "../helpers/utils";
+import { Crime } from "../types/global";
 import { Chip, Divider } from "@mui/material";
 
 type Props = {
@@ -49,7 +50,7 @@ function InfoCard({ name, crime_index, population, crimes, weights }: Props) {
       <Divider className="!my-2" />
       <div className="flex gap-2 overflow-auto !p-0 xl:flex-col">
         {Object.keys(crimes).map((crime: string, index: number) => (
-          <div className="flex flex-col gap-0">
+          <div className="flex flex-col gap-0" key={index}>
             <p className="text-text-primary text-base font-medium">
               {getCrimeName(crimes[index].crime)}
             </p>

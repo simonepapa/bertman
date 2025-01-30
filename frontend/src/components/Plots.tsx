@@ -1,6 +1,6 @@
-import { getCrimeName } from "../helpers/utils";
+import { getCrimeName, getQuartiereIndex } from "../helpers/utils";
 import { CustomTreeItem } from "../types/global";
-import { Chip } from "@mui/material";
+import { Card, Chip } from "@mui/material";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { PieChart } from "@mui/x-charts/PieChart";
@@ -100,7 +100,13 @@ function Plots({ data, weights, articles, filters }: Props) {
       const crimeCountByYear: { [key: string]: number } = {};
       const final: { [key: string]: number | string }[] = [];
 
-      articles.forEach((area) => {
+      const filteredArticles = articles.filter((obj: CustomTreeItem) => {
+        const quartiere_index = getQuartiereIndex(obj.label);
+
+        return filters.quartieri[quartiere_index] === 1;
+      });
+
+      filteredArticles.forEach((area) => {
         if (area.children) {
           area.children.forEach((yearObj) => {
             const year = yearObj.label;
@@ -129,13 +135,19 @@ function Plots({ data, weights, articles, filters }: Props) {
 
       setCrimesByYear(final);
     }
-  }, [articles]);
+  }, [articles, filters.quartieri]);
 
   const countCrimesByYearAndNeighborhood = useCallback(() => {
     if (articles) {
       const crimeData: { [key: string]: { [key: string]: number } } = {};
 
-      articles.forEach((area) => {
+      const filteredArticles = articles.filter((obj: CustomTreeItem) => {
+        const quartiere_index = getQuartiereIndex(obj.label);
+
+        return filters.quartieri[quartiere_index] === 1;
+      });
+
+      filteredArticles.forEach((area) => {
         const neighborhood = area.label;
         if (quartieri.includes(neighborhood) && area.children) {
           if (!crimeData[neighborhood]) {
@@ -176,7 +188,7 @@ function Plots({ data, weights, articles, filters }: Props) {
           })
       );
     }
-  }, [articles, quartieri]);
+  }, [articles, filters.quartieri, quartieri]);
 
   const countCrimesByType = useCallback(() => {
     if (data) {
@@ -217,22 +229,10 @@ function Plots({ data, weights, articles, filters }: Props) {
   }, [data, filters.quartieri]);
 
   useEffect(() => {
-    if (crimesByYear === null) {
-      countCrimesByYear();
-    }
-    if (crimesByYearQuartiere === null) {
-      countCrimesByYearAndNeighborhood();
-    }
-  }, [
-    countCrimesByYear,
-    countCrimesByYearAndNeighborhood,
-    crimesByYear,
-    crimesByYearQuartiere
-  ]);
-
-  useEffect(() => {
     countCrimesByType();
-  }, [countCrimesByType]);
+    countCrimesByYear();
+    countCrimesByYearAndNeighborhood();
+  }, [countCrimesByType, countCrimesByYear, countCrimesByYearAndNeighborhood]);
 
   const keyToLabels: { [key: string]: string } = {
     "Bari Vecchia - San Nicola": "Bari Vecchia - San Nicola",
@@ -272,10 +272,8 @@ function Plots({ data, weights, articles, filters }: Props) {
         )}
       {data && barDataset && crimesByType && (
         <div className="flex flex-col gap-4 xl:flex-row">
-          <div className="flex w-full flex-col gap-2 xl:w-1/2">
-            <h2 className="text-lg font-bold">
-              (Scaled) crime index per neighborhood
-            </h2>
+          <Card className="!flex !w-full !flex-col !gap-2 p-4 xl:!w-1/2">
+            <h2 className="text-lg font-bold">Crime index per neighborhood</h2>
             <BarChart
               dataset={barDataset}
               xAxis={[
@@ -286,6 +284,21 @@ function Plots({ data, weights, articles, filters }: Props) {
                 }
               ]}
               height={400}
+              margin={{ bottom: 80 }}
+              bottomAxis={{
+                labelStyle: {
+                  fontSize: 14,
+                  transform: `translateY(${
+                    // Hack that should be added in the lib latter.
+                    5 * Math.abs(Math.sin((Math.PI * 45) / 180))
+                  }px)`
+                },
+                tickLabelStyle: {
+                  angle: 45,
+                  textAnchor: "start",
+                  fontSize: 12
+                }
+              }}
               series={[
                 {
                   dataKey: "crime_index_scalato",
@@ -299,8 +312,8 @@ function Plots({ data, weights, articles, filters }: Props) {
                 }
               ]}
             />
-          </div>
-          <div className="flex w-full flex-col gap-2 xl:w-1/2">
+          </Card>
+          <Card className="!flex !w-full !flex-col !gap-2 p-4 xl:!w-1/2">
             <h2 className="text-lg font-bold">Most common crimes in Bari</h2>
             <PieChart
               dataset={barDataset}
@@ -309,20 +322,21 @@ function Plots({ data, weights, articles, filters }: Props) {
               series={[
                 {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  data: crimesByType as any
+                  data: crimesByType as any,
+                  highlightScope: { fade: "global", highlight: "item" }
                 }
               ]}
             />
-          </div>
+          </Card>
         </div>
       )}
       {articles && (
-        <div className="flex flex-col gap-2">
+        <Card className="!mt-4 !flex !flex-col !gap-2 p-4">
           <h2 className="text-lg font-bold">
             Evolution of crimes in Bari by year
           </h2>
           <div className="flex flex-col flex-wrap gap-4 xl:flex-row xl:justify-between">
-            <div className="w-full">
+            <Card className="!w-full">
               <LineChart
                 colors={colors}
                 xAxis={[
@@ -336,15 +350,14 @@ function Plots({ data, weights, articles, filters }: Props) {
                 series={[
                   {
                     dataKey: "crimes",
-                    label: "Crimes",
-                    showMark: false
+                    label: "Crimes"
                   }
                 ]}
                 height={400}
                 dataset={crimesByYear || []}
               />
-            </div>
-            <div className="w-full">
+            </Card>
+            <Card className="!w-full">
               <LineChart
                 colors={colors}
                 xAxis={[
@@ -363,9 +376,9 @@ function Plots({ data, weights, articles, filters }: Props) {
                 height={400}
                 dataset={crimesByYearQuartiere || []}
               />
-            </div>
+            </Card>
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );

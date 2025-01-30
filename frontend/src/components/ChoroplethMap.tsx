@@ -1,3 +1,4 @@
+import { Crime, InfoQuartiere } from "../types/global";
 import { Feature, GeoJsonObject } from "geojson";
 import { GeoJSONOptions, Layer, LeafletMouseEvent } from "leaflet";
 import { Dispatch, SetStateAction, useCallback } from "react";

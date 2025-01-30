@@ -331,7 +331,7 @@ function Dashboard() {
 
   return (
     <div className="flex flex-col gap-8 xl:flex-row xl:gap-0">
-      <div className="h-fit w-full p-4 xl:min-h-screen xl:w-[25%] xl:pr-0">
+      <div className="relative h-fit w-full p-4 xl:min-h-screen xl:w-[25%] xl:pr-0">
         <DashboardLeft
           palette={palette}
           setPalette={setPalette}
@@ -397,7 +397,7 @@ function Dashboard() {
             <ChoroplethLegend palette={palette} />
           </div>
         )}
-        {tab === 1 && (
+        {tab === 1 && data && (
           <Plots
             data={data}
             weights={info.weights || null}

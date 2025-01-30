@@ -62,7 +62,20 @@ function ReadArticles() {
           "December"
         ];
 
-        const reverseMonths: string[] = mesi.reverse();
+        const reverseMonths: string[] = [
+          "December",
+          "November",
+          "October",
+          "September",
+          "August",
+          "July",
+          "June",
+          "May",
+          "April",
+          "March",
+          "February",
+          "January"
+        ];
 
         // Get month id and month name
         const getMonthLabel = (
@@ -176,8 +189,6 @@ function ReadArticles() {
     fetchArticles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  console.log(items);
 
   return (
     <div className="mt-8 mb-12 flex flex-col gap-8 px-4 xl:mx-12 xl:flex-row xl:px-0">
