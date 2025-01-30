@@ -40,6 +40,7 @@ function ReadArticles() {
 
         // Set articles to later retrieve one of them
         setArticles(jsonData);
+        setItems(null); // reset items to later fill them
 
         // Indices to have unique IDs for TreeView
         let monthIndex = 0;
@@ -74,6 +75,8 @@ function ReadArticles() {
           "December"
         ];
 
+        const reverseMonths: string[] = mesi.reverse();
+
         // Get month id and month name
         const getMonthLabel = (
           dateString: string
@@ -88,7 +91,7 @@ function ReadArticles() {
         jsonData.forEach((article: Article) => {
           // Check if neighborhood exists
           const quartiere: CustomTreeItem | undefined = struttura.find(
-            (q) => q.label === getQuartiereName(article.quartiere)
+            (q) => q.label === getQuartiereName(article.quartiere || "")
           );
           if (quartiere) {
             // Get year
@@ -128,7 +131,7 @@ function ReadArticles() {
             if (!alreadyIn) {
               month?.children?.push({
                 id: article.id.toString(),
-                label: article.title,
+                label: article.title || "",
                 url: article.link,
                 date: article.date,
                 isLastChild: true
@@ -143,15 +146,17 @@ function ReadArticles() {
             );
 
             // Sort by month
-            yearNode?.children?.sort(
-              (a: CustomTreeItem, b: CustomTreeItem) =>
-                parseInt(b.id) - parseInt(a.id)
-            );
+            yearNode?.children?.sort((a: CustomTreeItem, b: CustomTreeItem) => {
+              const monthAIndex = reverseMonths.indexOf(a.label);
+              const monthBIndex = reverseMonths.indexOf(b.label);
+
+              return monthAIndex - monthBIndex;
+            });
 
             // Sort by year
             quartiere?.children?.sort(
               (a: CustomTreeItem, b: CustomTreeItem) =>
-                parseInt(b.id) - parseInt(a.id)
+                parseInt(b.label) - parseInt(a.label)
             );
           }
         });
@@ -168,6 +173,7 @@ function ReadArticles() {
   }, []);
 
   const handleArticleClick = (e: MouseEvent, item: string) => {
+    // Check if the item id starts with one of the three strings that identify a neighborhood, a month or a year. If it does not, then check if the article exists in the articles state and set the article state to read it
     if (!/^quartiere_|^year_|^month_/.test(item)) {
       const found = articles?.find(
         (article: Article) => article.id.toString() === item
@@ -176,8 +182,6 @@ function ReadArticles() {
       if (found) {
         setArticle(found);
       }
-    } else {
-      setArticle(null);
     }
   };
 
@@ -238,10 +242,10 @@ function ReadArticles() {
                       <span className="font-semibold">
                         {getCrimeName("aggressione")}
                       </span>
-                      : {article.aggressione === 0 ? "false" : "true"}
+                      : {article?.aggressione === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${article.aggressione_prob * 100}% probability of this label being true`}
+                  secondary={`${(article?.aggressione_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -252,12 +256,12 @@ function ReadArticles() {
                         {getCrimeName("associazione_di_tipo_mafioso")}
                       </span>
                       :{" "}
-                      {article.associazione_di_tipo_mafioso === 0
+                      {article?.associazione_di_tipo_mafioso === 0
                         ? "false"
                         : "true"}
                     </p>
                   }
-                  secondary={`${article.associazione_di_tipo_mafioso_prob * 100}% probability of this label being true`}
+                  secondary={`${(article?.associazione_di_tipo_mafioso_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -267,10 +271,10 @@ function ReadArticles() {
                       <span className="font-semibold">
                         {getCrimeName("contrabbando")}
                       </span>
-                      : {article.contrabbando === 0 ? "false" : "true"}
+                      : {article?.contrabbando === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${article.contrabbando_prob * 100}% probability of this label being true`}
+                  secondary={`${(article?.contrabbando_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -280,10 +284,10 @@ function ReadArticles() {
                       <span className="font-semibold">
                         {getCrimeName("estorsione")}
                       </span>
-                      : {article.estorsione === 0 ? "false" : "true"}
+                      : {article?.estorsione === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${article.estorsione_prob * 100}% probability of this label being true`}
+                  secondary={`${(article?.estorsione_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -293,10 +297,10 @@ function ReadArticles() {
                       <span className="font-semibold">
                         {getCrimeName("furto")}
                       </span>
-                      : {article.furto === 0 ? "false" : "true"}
+                      : {article?.furto === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${article.furto_prob * 100}% probability of this label being true`}
+                  secondary={`${(article?.furto_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -306,10 +310,10 @@ function ReadArticles() {
                       <span className="font-semibold">
                         {getCrimeName("omicidio")}
                       </span>
-                      : {article.omicidio === 0 ? "false" : "true"}
+                      : {article?.omicidio === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${article.omicidio_prob * 100}% probability of this label being true`}
+                  secondary={`${(article?.omicidio_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -319,10 +323,10 @@ function ReadArticles() {
                       <span className="font-semibold">
                         {getCrimeName("omicidio_colposo")}
                       </span>
-                      : {article.omicidio_colposo === 0 ? "false" : "true"}
+                      : {article?.omicidio_colposo === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${article.omicidio_colposo_prob * 100}% probability of this label being true`}
+                  secondary={`${(article?.omicidio_colposo_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -332,10 +336,10 @@ function ReadArticles() {
                       <span className="font-semibold">
                         {getCrimeName("omicidio_stradale")}
                       </span>
-                      : {article.omicidio_stradale === 0 ? "false" : "true"}
+                      : {article?.omicidio_stradale === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${article.omicidio_stradale_prob * 100}% probability of this label being true`}
+                  secondary={`${(article?.omicidio_stradale_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -345,10 +349,10 @@ function ReadArticles() {
                       <span className="font-semibold">
                         {getCrimeName("rapina")}
                       </span>
-                      : {article.rapina === 0 ? "false" : "true"}
+                      : {article?.rapina === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${article.rapina_prob * 100}% probability of this label being true`}
+                  secondary={`${(article?.rapina_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -358,10 +362,10 @@ function ReadArticles() {
                       <span className="font-semibold">
                         {getCrimeName("spaccio")}
                       </span>
-                      : {article.spaccio === 0 ? "false" : "true"}
+                      : {article?.spaccio === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${article.spaccio_prob * 100}% probability of this label being true`}
+                  secondary={`${(article?.spaccio_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -371,10 +375,10 @@ function ReadArticles() {
                       <span className="font-semibold">
                         {getCrimeName("tentato_omicidio")}
                       </span>
-                      : {article.tentato_omicidio === 0 ? "false" : "true"}
+                      : {article?.tentato_omicidio === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${article.tentato_omicidio_prob * 100}% probability of this label being true`}
+                  secondary={`${(article?.tentato_omicidio_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -384,10 +388,10 @@ function ReadArticles() {
                       <span className="font-semibold">
                         {getCrimeName("truffa")}
                       </span>
-                      : {article.truffa === 0 ? "false" : "true"}
+                      : {article?.truffa === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${article.truffa_prob * 100}% probability of this label being true`}
+                  secondary={`${(article?.truffa_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -397,10 +401,10 @@ function ReadArticles() {
                       <span className="font-semibold">
                         {getCrimeName("violenza_sessuale")}
                       </span>
-                      : {article.violenza_sessuale === 0 ? "false" : "true"}
+                      : {article?.violenza_sessuale === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${article.violenza_sessuale_prob * 100}% probability of this label being true`}
+                  secondary={`${(article?.violenza_sessuale_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
             </List>

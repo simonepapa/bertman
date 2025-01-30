@@ -168,7 +168,7 @@ function Dashboard() {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  console.log(data);
+
   return (
     <div className="flex flex-col gap-8 xl:flex-row xl:gap-0">
       <div className="h-fit w-full p-4 xl:min-h-screen xl:w-[25%]">

@@ -26,7 +26,6 @@ type Props = {
 function Navbar({ children, window }: Props) {
   const location = useLocation();
   const { pathname } = location;
-  console.log(pathname);
 
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
 

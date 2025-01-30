@@ -1,7 +1,9 @@
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
+import LabelArticles from "./pages/LabelArticles";
 import ReadArticles from "./pages/ReadArticles";
 import Solutions from "./pages/Solutions";
+import { SnackbarProvider } from "notistack";
 import {
   createBrowserRouter,
   Navigate,
@@ -37,10 +39,22 @@ function App() {
           <ReadArticles />
         </Navbar>
       )
+    },
+    {
+      path: "/label-articles",
+      element: (
+        <Navbar>
+          <LabelArticles />
+        </Navbar>
+      )
     }
   ]);
 
-  return <RouterProvider router={router} />;
+  return (
+    <SnackbarProvider>
+      <RouterProvider router={router} />
+    </SnackbarProvider>
+  );
 }
 
 export default App;
