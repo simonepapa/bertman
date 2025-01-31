@@ -1,6 +1,7 @@
 import { getCrimeName, getQuartiereName } from "../helpers/utils";
 import { Article, CustomTreeItem } from "../types/global";
 import {
+  Button,
   CircularProgress,
   Divider,
   List,
@@ -8,6 +9,7 @@ import {
   ListItemText
 } from "@mui/material";
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
+import dayjs from "dayjs";
 import { MouseEvent, useCallback, useEffect, useState } from "react";
 
 function ReadArticles() {
@@ -185,6 +187,16 @@ function ReadArticles() {
     }
   };
 
+  const downloadJSON = () => {
+    const updatedJson = JSON.stringify(items, null, 2);
+    const blob = new Blob([updatedJson], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download =
+      "articles_from_db-" + dayjs().format("YYYY-MM-DD_HH-mm-ss") + ".json";
+    link.click();
+  };
+
   useEffect(() => {
     fetchArticles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -199,12 +211,20 @@ function ReadArticles() {
           {isLoading || items === null ? (
             <CircularProgress />
           ) : (
-            <RichTreeView
-              items={items}
-              onItemClick={(e: MouseEvent, item: string) =>
-                handleArticleClick(e, item)
-              }
-            />
+            <>
+              <RichTreeView
+                items={items}
+                onItemClick={(e: MouseEvent, item: string) =>
+                  handleArticleClick(e, item)
+                }
+              />
+              <Button
+                variant="contained"
+                onClick={downloadJSON}
+                className="!mt-6">
+                Download JSON
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -245,7 +265,7 @@ function ReadArticles() {
                       : {article?.aggressione === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${(article?.aggressione_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                  secondary={`${((article?.aggressione_prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -261,7 +281,7 @@ function ReadArticles() {
                         : "true"}
                     </p>
                   }
-                  secondary={`${(article?.associazione_di_tipo_mafioso_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                  secondary={`${((article?.associazione_di_tipo_mafioso_prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -274,7 +294,7 @@ function ReadArticles() {
                       : {article?.contrabbando === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${(article?.contrabbando_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                  secondary={`${((article?.contrabbando_prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -287,7 +307,7 @@ function ReadArticles() {
                       : {article?.estorsione === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${(article?.estorsione_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                  secondary={`${((article?.estorsione_prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -300,7 +320,7 @@ function ReadArticles() {
                       : {article?.furto === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${(article?.furto_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                  secondary={`${((article?.furto_prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -313,7 +333,7 @@ function ReadArticles() {
                       : {article?.omicidio === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${(article?.omicidio_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                  secondary={`${((article?.omicidio_prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -326,7 +346,7 @@ function ReadArticles() {
                       : {article?.omicidio_colposo === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${(article?.omicidio_colposo_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                  secondary={`${((article?.omicidio_colposo_prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -339,7 +359,7 @@ function ReadArticles() {
                       : {article?.omicidio_stradale === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${(article?.omicidio_stradale_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                  secondary={`${((article?.omicidio_stradale_prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -352,7 +372,7 @@ function ReadArticles() {
                       : {article?.rapina === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${(article?.rapina_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                  secondary={`${((article?.rapina_prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -365,7 +385,7 @@ function ReadArticles() {
                       : {article?.spaccio === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${(article?.spaccio_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                  secondary={`${((article?.spaccio_prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -378,7 +398,7 @@ function ReadArticles() {
                       : {article?.tentato_omicidio === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${(article?.tentato_omicidio_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                  secondary={`${((article?.tentato_omicidio_prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -391,7 +411,7 @@ function ReadArticles() {
                       : {article?.truffa === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${(article?.truffa_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                  secondary={`${((article?.truffa_prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
               <ListItem className="w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -404,7 +424,7 @@ function ReadArticles() {
                       : {article?.violenza_sessuale === 0 ? "false" : "true"}
                     </p>
                   }
-                  secondary={`${(article?.violenza_sessuale_prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                  secondary={`${((article?.violenza_sessuale_prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                 />
               </ListItem>
             </List>

@@ -393,7 +393,7 @@ function LabelArticles() {
                           : "true"}
                       </p>
                     }
-                    secondary={`${(labeledArticles[currentArticle]?.aggressione.prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                    secondary={`${((labeledArticles[currentArticle]?.aggressione.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
                 <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -419,7 +419,7 @@ function LabelArticles() {
                           : "true"}
                       </p>
                     }
-                    secondary={`${(labeledArticles[currentArticle]?.associazione_di_tipo_mafioso.prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                    secondary={`${((labeledArticles[currentArticle]?.associazione_di_tipo_mafioso.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
                 <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -444,7 +444,7 @@ function LabelArticles() {
                           : "true"}
                       </p>
                     }
-                    secondary={`${(labeledArticles[currentArticle]?.contrabbando.prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                    secondary={`${((labeledArticles[currentArticle]?.contrabbando.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
                 <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -468,7 +468,7 @@ function LabelArticles() {
                           : "true"}
                       </p>
                     }
-                    secondary={`${(labeledArticles[currentArticle]?.estorsione.prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                    secondary={`${((labeledArticles[currentArticle]?.estorsione.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
                 <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -490,7 +490,7 @@ function LabelArticles() {
                           : "true"}
                       </p>
                     }
-                    secondary={`${(labeledArticles[currentArticle]?.furto.prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                    secondary={`${((labeledArticles[currentArticle]?.furto.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
                 <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -514,7 +514,7 @@ function LabelArticles() {
                           : "true"}
                       </p>
                     }
-                    secondary={`${(labeledArticles[currentArticle]?.omicidio.prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                    secondary={`${((labeledArticles[currentArticle]?.omicidio.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
                 <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -540,7 +540,7 @@ function LabelArticles() {
                           : "true"}
                       </p>
                     }
-                    secondary={`${(labeledArticles[currentArticle]?.omicidio_colposo.prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                    secondary={`${((labeledArticles[currentArticle]?.omicidio_colposo.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
                 <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -566,7 +566,7 @@ function LabelArticles() {
                           : "true"}
                       </p>
                     }
-                    secondary={`${(labeledArticles[currentArticle]?.omicidio_stradale.prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                    secondary={`${((labeledArticles[currentArticle]?.omicidio_stradale.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
                 <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -590,7 +590,7 @@ function LabelArticles() {
                           : "true"}
                       </p>
                     }
-                    secondary={`${(labeledArticles[currentArticle]?.rapina.prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                    secondary={`${((labeledArticles[currentArticle]?.rapina.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
                 <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -614,7 +614,7 @@ function LabelArticles() {
                           : "true"}
                       </p>
                     }
-                    secondary={`${(labeledArticles[currentArticle]?.spaccio.prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                    secondary={`${((labeledArticles[currentArticle]?.spaccio.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
                 <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -640,7 +640,7 @@ function LabelArticles() {
                           : "true"}
                       </p>
                     }
-                    secondary={`${(labeledArticles[currentArticle]?.tentato_omicidio.prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                    secondary={`${((labeledArticles[currentArticle]?.tentato_omicidio.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
                 <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -664,7 +664,7 @@ function LabelArticles() {
                           : "true"}
                       </p>
                     }
-                    secondary={`${(labeledArticles[currentArticle]?.truffa.prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                    secondary={`${((labeledArticles[currentArticle]?.truffa.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
                 <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
@@ -690,7 +690,7 @@ function LabelArticles() {
                           : "true"}
                       </p>
                     }
-                    secondary={`${(labeledArticles[currentArticle]?.violenza_sessuale.prob || 0 * 100).toFixed(2)}% probability of this label being true`}
+                    secondary={`${((labeledArticles[currentArticle]?.violenza_sessuale.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
               </List>
