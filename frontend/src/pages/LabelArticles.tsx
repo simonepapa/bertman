@@ -1,4 +1,5 @@
 import { getCrimeName } from "../helpers/utils";
+import { Article, LabeledArticle } from "../types/global";
 import ArrowBackIosOutlinedIcon from "@mui/icons-material/ArrowBackIosOutlined";
 import ArrowForwardIosOutlinedIcon from "@mui/icons-material/ArrowForwardIosOutlined";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
