@@ -7,10 +7,18 @@ type Props = {
   crime_index: number | null;
   population: number;
   crimes: Crime[];
-  weights: { [key: string]: string } | null;
+  weights: { [key: string]: boolean } | null;
+  minmax: boolean;
 };
 
-function InfoCard({ name, crime_index, population, crimes, weights }: Props) {
+function InfoCard({
+  name,
+  crime_index,
+  population,
+  crimes,
+  weights,
+  minmax
+}: Props) {
   const numberOfCrimes = crimes.reduce(
     (acc: number, crime: Crime) => acc + crime.frequency,
     0
@@ -19,15 +27,16 @@ function InfoCard({ name, crime_index, population, crimes, weights }: Props) {
   return (
     <div className="info-card">
       {weights &&
-        Object.keys(weights).some(
-          (weight: string) => weights[weight] === "true"
-        ) && (
+        Object.keys(weights).some((weight: string) => weights[weight]) && (
           <div className="mb-2 flex flex-wrap gap-2">
-            <p className="text-base font-bold">Weights on:</p>
-            {weights.num_of_articles === "true" && (
+            <p className="text-base font-bold">Weights and scaling:</p>
+            {minmax && (
+              <Chip color="primary" label="MINMAX SCALED" size="small" />
+            )}
+            {weights.num_of_articles && (
               <Chip color="primary" label="NO. OF ARTICLES" size="small" />
             )}
-            {weights.num_of_people === "true" && (
+            {weights.num_of_people && (
               <Chip color="primary" label="NO. OF PEOPLE" size="small" />
             )}
           </div>

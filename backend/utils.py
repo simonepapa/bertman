@@ -23,7 +23,9 @@ number_of_people = {
     "san-girolamo_fesca": 4721,
 }
 
-def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes, weightsForArticles = 'true', weightsForPeople = 'false'): 
+def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes, weightsForArticles = 'true', weightsForPeople = 'false', minmaxScaler = 'true'): 
+    scaler = MinMaxScaler(feature_range=(0,100))
+
     crimes = {
         "omicidio": 0,
         "omicidio_colposo": 0,
@@ -53,7 +55,7 @@ def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes, 
       filtered_crimes = crimes
 
     for group, group_df in articles_df.groupby("quartiere"):
-      crime_data = {key: {"frequenza": 0, "crime_index_normalizzato": 0} for key in filtered_crimes}
+      crime_data = {key: {"frequenza": 0, "crime_index": 0} for key in filtered_crimes}
 
       # Group equals python_id/quartiere
       # Frequency
@@ -67,12 +69,6 @@ def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes, 
       for crime in filtered_crimes.keys():
           risk_index = crime_data[crime]["frequenza"] * weights[crime]
           crime_data[crime]["crime_index"] = risk_index
-
-      # Add to GeoJSON
-      for feature in geojson_data["features"]:
-          if feature["properties"].get("python_id") == group:
-              feature["properties"]["crimini"] = crime_data
-              break
 
       # Weight
       quartieri_df.loc[quartieri_df['Quartiere'] == group, 'Peso quartiere'] = len(group_df.index)
@@ -89,14 +85,28 @@ def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes, 
       if weightsForPeople == 'true':
         indice_di_rischio_totale = indice_di_rischio_totale / number_of_people[group]
 
+      if minmaxScaler == 'true':
+        # Scale individual risk indices too
+        np_values = [crime_data[crime]["crime_index"] for crime in crime_data]
+        values_array = np.array(np_values).reshape(-1, 1)
+        scaled_values = scaler.fit_transform(values_array)  
+        for idx, crime in enumerate(crime_data):
+            crime_data[crime]["crime_index"] = float(scaled_values[idx, 0])
+
+      # Add to GeoJSON
+      for feature in geojson_data["features"]:
+          if feature["properties"].get("python_id") == group:
+              feature["properties"]["crimini"] = crime_data
+              break
+
       # Save risk index in dataframe
       quartieri_df.loc[quartieri_df['Quartiere'] == group, 'Indice di rischio'] = indice_di_rischio_totale
 
-    scaler = MinMaxScaler(feature_range=(0,100))
     quartieri_df['Indice di rischio scalato'] = scaler.fit_transform(quartieri_df[['Indice di rischio']])
 
     geojson_data["weightsForArticles"] = weightsForArticles
     geojson_data["weightsForPeople"] = weightsForPeople
+    geojson_data["minmaxScaler"] = minmaxScaler
 
     return geojson_data
 

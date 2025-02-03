@@ -12,7 +12,8 @@ type InfoQuartiere = {
   total_crimes: number | null;
   population: number;
   crimes: Crime[];
-  weights?: { [key: string]: string };
+  weights?: { [key: string]: boolean };
+  minmax: boolean;
 };
 
 type Article = {

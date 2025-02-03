@@ -9,14 +9,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 type Props = {
   data: GeoJsonObject | null;
-  weights: { [key: string]: string } | null;
+  weights: { [key: string]: boolean } | null;
+  minmax: boolean;
   articles: CustomTreeItem[] | null;
   filters: {
     [key: string]: { [key: string]: number };
   };
 };
 
-function Plots({ data, weights, articles, filters }: Props) {
+function Plots({ data, weights, minmax, articles, filters }: Props) {
   const [crimesByYear, setCrimesByYear] = useState<
     | {
         [key: string]: number | string;
@@ -257,15 +258,16 @@ function Plots({ data, weights, articles, filters }: Props) {
   return (
     <div className="xl:pl-4">
       {weights &&
-        Object.keys(weights).some(
-          (weight: string) => weights[weight] === "true"
-        ) && (
+        Object.keys(weights).some((weight: string) => weights[weight]) && (
           <div className="mb-4 flex flex-wrap gap-2">
-            <p className="text-base font-bold">Weights on:</p>
-            {weights.num_of_articles === "true" && (
+            <p className="text-base font-bold">Weights and scaling:</p>
+            {minmax && (
+              <Chip color="primary" label="MINMAX SCALED" size="small" />
+            )}
+            {weights.num_of_articles && (
               <Chip color="primary" label="NO. OF ARTICLES" size="small" />
             )}
-            {weights.num_of_people === "true" && (
+            {weights.num_of_people && (
               <Chip color="primary" label="NO. OF PEOPLE" size="small" />
             )}
           </div>
@@ -301,13 +303,8 @@ function Plots({ data, weights, articles, filters }: Props) {
               }}
               series={[
                 {
-                  dataKey: "crime_index_scalato",
+                  dataKey: minmax ? "crime_index_scalato" : "crime_index",
                   label: "Scaled crime index",
-                  valueFormatter
-                },
-                {
-                  dataKey: "crime_index",
-                  label: "Crime index",
                   valueFormatter
                 }
               ]}

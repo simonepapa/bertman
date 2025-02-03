@@ -77,8 +77,8 @@ export default [
       ],
       "react/require-render-return": "error",
       "react/react-in-jsx-scope": "off",
-      "prettier/prettier": "error"
-      //"no-console": "warn" TODO: reactivate later
+      "prettier/prettier": "error",
+      "no-console": "warn"
     }
   }
 ];

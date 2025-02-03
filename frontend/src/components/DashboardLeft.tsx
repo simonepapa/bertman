@@ -112,6 +112,9 @@ function DashboardLeft({
       weights: {
         num_of_articles: 1,
         num_of_people: 0
+      },
+      scaling: {
+        minmax: 1
       }
     });
     handleResetDate();
@@ -584,7 +587,41 @@ function DashboardLeft({
                   title={
                     <p className="text-sm">
                       Divides the crime index by the number of people for that
-                      neighborhood
+                      neighborhood. WARNING: activating this and "number of
+                      articles" without scaling will result in all crime indices
+                      being rounded to 0.
+                    </p>
+                  }>
+                  <IconButton>
+                    <InfoIcon />
+                  </IconButton>
+                </Tooltip>
+              </div>
+            </FormGroup>
+          </div>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1">
+              <label className="text-lg font-medium">Scaling</label>
+            </div>
+            <FormGroup className="flex !flex-row flex-wrap gap-3">
+              <div className="flex items-center">
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      onChange={() => handleFiltersChange("minmax", "scaling")}
+                      checked={filters.scaling["minmax"] === 1}
+                    />
+                  }
+                  label="Minmax scaler"
+                  className="!mr-0"
+                />
+                <Tooltip
+                  title={
+                    <p className="text-sm">
+                      Scale the indices into a [0,100] range. Note that this way
+                      there will always be an element with index 0 (min) and an
+                      element with index 100 (max). The colors of the map will
+                      be based on the scaled value.
                     </p>
                   }>
                   <IconButton>

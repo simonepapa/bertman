@@ -54,6 +54,9 @@ function Dashboard() {
     weights: {
       num_of_articles: 1,
       num_of_people: 0
+    },
+    scaling: {
+      minmax: 1
     }
   });
   const [tile, setTile] = useState<string>(
@@ -67,9 +70,10 @@ function Dashboard() {
     population: 0,
     crimes: [],
     weights: {
-      num_of_articles: "false",
-      num_of_people: "false"
-    }
+      num_of_articles: false,
+      num_of_people: false
+    },
+    minmax: true
   });
   const [data, setData] = useState<GeoJsonObject | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -139,6 +143,9 @@ function Dashboard() {
       queryParams.push(
         `${filters?.weights.num_of_people === 1 ? "weightsForPeople=true" : "weightsForPeople=false"}`
       );
+      queryParams.push(
+        `${filters?.scaling.minmax === 1 ? "minmaxScaler=true" : "minmaxScaler=false"}`
+      );
       const queryString = queryParams.join("&");
 
       const response = await fetch(
@@ -153,9 +160,10 @@ function Dashboard() {
         setInfo((prevState: any) => ({
           ...prevState,
           weights: {
-            num_of_articles: jsonData.weightsForArticles,
-            num_of_people: jsonData.weightsForPeople
-          }
+            num_of_articles: jsonData.weightsForArticles === "true",
+            num_of_people: jsonData.weightsForPeople === "true"
+          },
+          minmax: jsonData.minmaxScaler === "true"
         }));
       } else {
         console.error("Response error", response.status);
@@ -169,11 +177,12 @@ function Dashboard() {
     endDate,
     filters.crimes,
     filters.quartieri,
-    filters?.weights?.num_of_articles,
-    filters?.weights?.num_of_people,
+    filters?.scaling.minmax,
+    filters?.weights.num_of_articles,
+    filters?.weights.num_of_people,
     startDate
   ]);
-
+  console.log(info);
   useEffect(() => {
     if (startDate === null) {
       setEndDate(null);
@@ -375,6 +384,7 @@ function Dashboard() {
               crimes={info.crimes}
               weights={info.weights || null}
               population={info.population}
+              minmax={info.minmax}
             />
             {isLoading ? (
               <CircularProgress className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
@@ -391,6 +401,7 @@ function Dashboard() {
                   data={data}
                   color={palette}
                   weights={info.weights || null}
+                  minmax={info.minmax}
                 />
               </MapContainer>
             )}
@@ -401,6 +412,7 @@ function Dashboard() {
           <Plots
             data={data}
             weights={info.weights || null}
+            minmax={info.minmax}
             articles={articles}
             filters={filters}
           />
