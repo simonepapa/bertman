@@ -56,30 +56,38 @@ function Navbar({ children, window }: Props) {
               className="!hidden sm:!block">
               BERTMAN
             </Typography>
-            <Box className="!hidden sm:ml-4 sm:!block">
+            <Box className="!hidden sm:ml-4 sm:!flex sm:!w-full sm:!justify-between">
+              <div>
+                <Button
+                  component={Link}
+                  to={"/dashboard"}
+                  className={`!text-white !normal-case ${pathname === "/dashboard" ? "!font-bold" : "!font-normal"}`}>
+                  Dashboard
+                </Button>
+                <Button
+                  component={Link}
+                  to={"/solutions"}
+                  className={`!text-white !normal-case ${pathname === "/solutions" ? "!font-bold" : "!font-normal"}`}>
+                  Solutions
+                </Button>
+                <Button
+                  component={Link}
+                  to={"/read-articles"}
+                  className={`!text-white !normal-case ${pathname === "/read-articles" ? "!font-bold" : "!font-normal"}`}>
+                  Read articles
+                </Button>
+                <Button
+                  component={Link}
+                  to={"/label-articles"}
+                  className={`!text-white !normal-case ${pathname === "/label-articles" ? "!font-bold" : "!font-normal"}`}>
+                  Label articles
+                </Button>
+              </div>
               <Button
                 component={Link}
-                to={"/dashboard"}
-                className={`!text-white !normal-case ${pathname === "/dashboard" ? "!font-bold" : "!font-normal"}`}>
-                Dashboard
-              </Button>
-              <Button
-                component={Link}
-                to={"/solutions"}
-                className={`!text-white !normal-case ${pathname === "/solutions" ? "!font-bold" : "!font-normal"}`}>
-                Solutions
-              </Button>
-              <Button
-                component={Link}
-                to={"/read-articles"}
-                className={`!text-white !normal-case ${pathname === "/read-articles" ? "!font-bold" : "!font-normal"}`}>
-                Read articles
-              </Button>
-              <Button
-                component={Link}
-                to={"/label-articles"}
-                className={`!text-white !normal-case ${pathname === "/label-articles" ? "!font-bold" : "!font-normal"}`}>
-                Label articles
+                to={"/methodology"}
+                className={`!text-white !normal-case ${pathname === "/methodology" ? "!font-bold" : "!font-normal"}`}>
+                Methodology
               </Button>
             </Box>
           </Toolbar>
@@ -167,6 +175,23 @@ function Navbar({ children, window }: Props) {
                         span: {
                           fontWeight:
                             pathname === "/label-articles" ? "700" : "400"
+                        }
+                      }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding={true}>
+                  <ListItemButton
+                    component={Link}
+                    to={"/methodology"}
+                    sx={{ textAlign: "center" }}>
+                    <ListItemText
+                      primary={"Methodology"}
+                      sx={{
+                        textTransform: "none",
+                        span: {
+                          fontWeight:
+                            pathname === "/methodology" ? "700" : "400"
                         }
                       }}
                     />

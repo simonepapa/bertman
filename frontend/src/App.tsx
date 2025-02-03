@@ -1,6 +1,7 @@
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
 import LabelArticles from "./pages/LabelArticles";
+import Methodology from "./pages/Methodology";
 import ReadArticles from "./pages/ReadArticles";
 import Solutions from "./pages/Solutions";
 import { SnackbarProvider } from "notistack";
@@ -45,6 +46,14 @@ function App() {
       element: (
         <Navbar>
           <LabelArticles />
+        </Navbar>
+      )
+    },
+    {
+      path: "/methodology",
+      element: (
+        <Navbar>
+          <Methodology />
         </Navbar>
       )
     }

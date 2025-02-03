@@ -397,7 +397,7 @@ function LabelArticles() {
                     secondary={`${((labeledArticles[currentArticle]?.aggressione.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
-                <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
+                <ListItem className="flex w-full items-center gap-2 sm:max-w-1/2 xl:max-w-1/4">
                   <Switch
                     checked={
                       labeledArticles[currentArticle]
@@ -423,7 +423,7 @@ function LabelArticles() {
                     secondary={`${((labeledArticles[currentArticle]?.associazione_di_tipo_mafioso.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
-                <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
+                <ListItem className="flex w-full items-center gap-2 sm:max-w-1/2 xl:max-w-1/4">
                   <Switch
                     checked={
                       labeledArticles[currentArticle]?.contrabbando.value === 1
@@ -448,7 +448,7 @@ function LabelArticles() {
                     secondary={`${((labeledArticles[currentArticle]?.contrabbando.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
-                <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
+                <ListItem className="flex w-full items-center gap-2 sm:max-w-1/2 xl:max-w-1/4">
                   <Switch
                     checked={
                       labeledArticles[currentArticle]?.estorsione.value === 1
@@ -472,7 +472,7 @@ function LabelArticles() {
                     secondary={`${((labeledArticles[currentArticle]?.estorsione.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
-                <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
+                <ListItem className="flex w-full items-center gap-2 sm:max-w-1/2 xl:max-w-1/4">
                   <Switch
                     checked={labeledArticles[currentArticle]?.furto.value === 1}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -494,7 +494,7 @@ function LabelArticles() {
                     secondary={`${((labeledArticles[currentArticle]?.furto.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
-                <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
+                <ListItem className="flex w-full items-center gap-2 sm:max-w-1/2 xl:max-w-1/4">
                   <Switch
                     checked={
                       labeledArticles[currentArticle]?.omicidio.value === 1
@@ -518,7 +518,7 @@ function LabelArticles() {
                     secondary={`${((labeledArticles[currentArticle]?.omicidio.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
-                <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
+                <ListItem className="flex w-full items-center gap-2 sm:max-w-1/2 xl:max-w-1/4">
                   <Switch
                     checked={
                       labeledArticles[currentArticle]?.omicidio_colposo
@@ -544,7 +544,7 @@ function LabelArticles() {
                     secondary={`${((labeledArticles[currentArticle]?.omicidio_colposo.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
-                <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
+                <ListItem className="flex w-full items-center gap-2 sm:max-w-1/2 xl:max-w-1/4">
                   <Switch
                     checked={
                       labeledArticles[currentArticle]?.omicidio_stradale
@@ -570,7 +570,7 @@ function LabelArticles() {
                     secondary={`${((labeledArticles[currentArticle]?.omicidio_stradale.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
-                <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
+                <ListItem className="flex w-full items-center gap-2 sm:max-w-1/2 xl:max-w-1/4">
                   <Switch
                     checked={
                       labeledArticles[currentArticle]?.rapina.value === 1
@@ -594,7 +594,7 @@ function LabelArticles() {
                     secondary={`${((labeledArticles[currentArticle]?.rapina.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
-                <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
+                <ListItem className="flex w-full items-center gap-2 sm:max-w-1/2 xl:max-w-1/4">
                   <Switch
                     checked={
                       labeledArticles[currentArticle]?.spaccio.value === 1
@@ -618,7 +618,7 @@ function LabelArticles() {
                     secondary={`${((labeledArticles[currentArticle]?.spaccio.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
-                <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
+                <ListItem className="flex w-full items-center gap-2 sm:max-w-1/2 xl:max-w-1/4">
                   <Switch
                     checked={
                       labeledArticles[currentArticle]?.tentato_omicidio
@@ -644,7 +644,7 @@ function LabelArticles() {
                     secondary={`${((labeledArticles[currentArticle]?.tentato_omicidio.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
-                <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
+                <ListItem className="flex w-full items-center gap-2 sm:max-w-1/2 xl:max-w-1/4">
                   <Switch
                     checked={
                       labeledArticles[currentArticle]?.truffa.value === 1
@@ -668,7 +668,7 @@ function LabelArticles() {
                     secondary={`${((labeledArticles[currentArticle]?.truffa.prob || 0) * 100).toFixed(2)}% probability of this label being true`}
                   />
                 </ListItem>
-                <ListItem className="items-cente rgap-2 flex w-full sm:max-w-1/2 xl:max-w-1/4">
+                <ListItem className="flex w-full items-center gap-2 sm:max-w-1/2 xl:max-w-1/4">
                   <Switch
                     checked={
                       labeledArticles[currentArticle]?.violenza_sessuale
