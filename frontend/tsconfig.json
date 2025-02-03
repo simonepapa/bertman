@@ -26,12 +26,12 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "*": ["./types/*.d.ts"]
+    },
   },
   "include": ["src/**/*"],
-  "paths": {
-    "*": ["types/*.d.ts"]
-  },
   "references": [
     { "path": "./tsconfig.node.json" }
   ]

@@ -24,9 +24,15 @@ Go to [this link](https://drive.google.com/file/d/1LQ7FOtOT2Zuyx41NEkfyw9-rox4cl
 
 Navigate to _backend_ and run _flask --app app run_.
 
+Note that it will run in port 5000 by default. Make sure that this is respected or change the port in the frontend API calls.
+
 ## Run the frontend
 
-Navigate to _frontend_ and run _npm run dev_
+Make sure that you have at least **NodeJS 22** installed.
+
+Navigate to _frontend_ and run _npm run dev_.
+
+Note that it will run in port 5173 by default.
 
 ### Optional
 

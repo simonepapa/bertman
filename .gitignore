@@ -1,2 +1,2 @@
 /node_modules
-*.safetensors
+backend/data/bert_fine_tuned_model/model.safetensors
