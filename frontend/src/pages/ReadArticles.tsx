@@ -1,5 +1,6 @@
-import { getCrimeName, getQuartiereName } from "../helpers/utils";
-import { Article, CustomTreeItem } from "../types/global";
+import useFetchArticles from "../helpers/hooks/useFetchArticles";
+import { getCrimeName } from "../helpers/utils";
+import { Article } from "../types/global";
 import {
   Button,
   CircularProgress,
@@ -10,169 +11,15 @@ import {
 } from "@mui/material";
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
 import dayjs from "dayjs";
-import { MouseEvent, useCallback, useEffect, useState } from "react";
+import { MouseEvent, useState } from "react";
 
 function ReadArticles() {
-  const [articles, setArticles] = useState<Article[] | null>(null);
   const [article, setArticle] = useState<Article | null>(null);
-  const [items, setItems] = useState<CustomTreeItem[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const fetchArticles = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(`http://127.0.0.1:5000/get-articles`);
-
-      if (response.ok) {
-        const jsonData = await response.json();
-
-        // Set articles to later retrieve one of them
-        setArticles(jsonData);
-        setItems(null); // reset items to later fill them
-
-        // Indices to have unique IDs for TreeView
-        let monthIndex = 0;
-        let yearIndex = 0;
-
-        // Isolate neighborhoods
-        const quartieri: string[] = Array.from(
-          new Set(jsonData.map((article: Article) => article.quartiere))
-        );
-
-        // Create TreeView structure
-        const struttura: CustomTreeItem[] = quartieri.map(
-          (quartiere: string, index: number) => ({
-            id: "quartiere_" + index + 1,
-            label: getQuartiereName(quartiere),
-            children: []
-          })
-        );
-
-        const mesi: string[] = [
-          "January",
-          "February",
-          "March",
-          "April",
-          "May",
-          "June",
-          "July",
-          "August",
-          "September",
-          "October",
-          "November",
-          "December"
-        ];
-
-        const reverseMonths: string[] = [
-          "December",
-          "November",
-          "October",
-          "September",
-          "August",
-          "July",
-          "June",
-          "May",
-          "April",
-          "March",
-          "February",
-          "January"
-        ];
-
-        // Get month id and month name
-        const getMonthLabel = (
-          dateString: string
-        ): { id: string; label: string } => {
-          const date = new Date(dateString);
-          const month = date.getMonth();
-          const object = { id: "month_" + monthIndex, label: mesi[month] };
-          monthIndex += 1;
-          return object;
-        };
-
-        jsonData.forEach((article: Article) => {
-          // Check if neighborhood exists
-          const quartiere: CustomTreeItem | undefined = struttura.find(
-            (q) => q.label === getQuartiereName(article.quartiere || "")
-          );
-          if (quartiere) {
-            // Get year
-            const dateObj = new Date(article?.date.replace(" ", "T"));
-            const year = dateObj.getFullYear().toString();
-            const { id: monthId, label: monthLabel } = getMonthLabel(
-              article.date
-            );
-
-            // Push items into correct year
-            let yearNode: CustomTreeItem | undefined =
-              quartiere?.children?.find((y) => y.label === year);
-            if (!yearNode) {
-              yearNode = {
-                id: "year_" + yearIndex,
-                label: year,
-                children: []
-              };
-              yearIndex += 1;
-              quartiere?.children?.push(yearNode);
-            }
-
-            // Get month and push items into correct month
-            let month: CustomTreeItem | undefined = yearNode?.children?.find(
-              (m) => m.label === monthLabel
-            );
-            if (!month) {
-              month = { id: monthId, label: monthLabel, children: [] };
-              yearNode?.children?.push(month);
-            }
-
-            // Check if article already exists. This check is useful so that no duplicate articles can be found in the articles state
-            const alreadyIn: CustomTreeItem | undefined = month?.children?.find(
-              (m) => m.id === article.id.toString()
-            );
-
-            if (!alreadyIn) {
-              month?.children?.push({
-                id: article.id.toString(),
-                label: article.title || "",
-                url: article.link,
-                date: article.date,
-                isLastChild: true
-              });
-            }
-
-            // Sort by day
-            month?.children?.sort(
-              (a: CustomTreeItem, b: CustomTreeItem) =>
-                new Date(b?.date as string).getTime() -
-                new Date(a?.date as string).getTime()
-            );
-
-            // Sort by month
-            yearNode?.children?.sort((a: CustomTreeItem, b: CustomTreeItem) => {
-              const monthAIndex = reverseMonths.indexOf(a.label);
-              const monthBIndex = reverseMonths.indexOf(b.label);
-
-              return monthAIndex - monthBIndex;
-            });
-
-            // Sort by year
-            quartiere?.children?.sort(
-              (a: CustomTreeItem, b: CustomTreeItem) =>
-                parseInt(b.label) - parseInt(a.label)
-            );
-          }
-        });
-
-        setItems(struttura);
-      } else {
-        console.error("Response error", response.status);
-      }
-    } catch (error) {
-      console.error("Request error", error);
-    }
-
-    setIsLoading(false);
-  }, []);
+  const { articles: items, treeArticles: articles } = useFetchArticles(
+    setIsLoading,
+    true
+  );
 
   const handleArticleClick = (e: MouseEvent, item: string) => {
     // Check if the item id starts with one of the three strings that identify a neighborhood, a month or a year. If it does not, then check if the article exists in the articles state and set the article state to read it
@@ -196,11 +43,6 @@ function ReadArticles() {
       "articles_from_db-" + dayjs().format("YYYY-MM-DD_HH-mm-ss") + ".json";
     link.click();
   };
-
-  useEffect(() => {
-    fetchArticles();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <div className="mt-8 mb-12 flex flex-col gap-8 px-4 xl:mx-12 xl:flex-row xl:px-0">

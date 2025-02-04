@@ -3,8 +3,8 @@ import ChoroplethMap from "../components/ChoroplethMap";
 import DashboardLeft from "../components/DashboardLeft";
 import InfoCard from "../components/InfoCard";
 import Plots from "../components/Plots";
-import { getQuartiereName } from "../helpers/utils";
-import { Article, CustomTreeItem, InfoQuartiere } from "../types/global";
+import useFetchArticles from "../helpers/hooks/useFetchArticles";
+import { Filters, InfoQuartiere } from "../types/global";
 import ArrowCircleUpIcon from "@mui/icons-material/ArrowCircleUp";
 import { CircularProgress, Tab, Tabs } from "@mui/material";
 import dayjs, { Dayjs } from "dayjs";
@@ -14,9 +14,7 @@ import { useCallback, useEffect, useState } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
 
 function Dashboard() {
-  const [filters, setFilters] = useState<{
-    [key: string]: { [key: string]: number };
-  }>({
+  const [filters, setFilters] = useState<Filters>({
     crimes: {
       omicidio: 1,
       omicidio_colposo: 1,
@@ -57,6 +55,10 @@ function Dashboard() {
     },
     scaling: {
       minmax: 1
+    },
+    dates: {
+      startDate: null,
+      endDate: null
     }
   });
   const [tile, setTile] = useState<string>(
@@ -76,11 +78,12 @@ function Dashboard() {
     minmax: true
   });
   const [data, setData] = useState<GeoJsonObject | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
   const [tab, setTab] = useState<number>(0);
-  const [articles, setArticles] = useState<CustomTreeItem[] | null>(null);
+  const [legendValues, setLegendValues] = useState<number[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { articles } = useFetchArticles(setIsLoading, false);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTab(newValue);
@@ -156,6 +159,25 @@ function Dashboard() {
         const jsonData = await response.json();
         setData(jsonData);
 
+        // Create legend
+        const crimeIndexes: number[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (jsonData as any)?.features.forEach((item: any) => {
+          crimeIndexes.push(
+            jsonData.minmaxScaler === "true"
+              ? item.properties.crime_index_scalato
+              : item.properties.crime_index
+          );
+        });
+        const minCrime = Math.min(...crimeIndexes);
+        const maxCrime = Math.max(...crimeIndexes);
+        const step = (maxCrime - minCrime) / 8;
+        setLegendValues(
+          Array.from({ length: 8 }, (_, i) =>
+            parseFloat((minCrime + i * step).toFixed(2))
+          )
+        );
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setInfo((prevState: any) => ({
           ...prevState,
@@ -166,9 +188,11 @@ function Dashboard() {
           minmax: jsonData.minmaxScaler === "true"
         }));
       } else {
+        // eslint-disable-next-line no-console
         console.error("Response error", response.status);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("Request error", error);
     }
 
@@ -182,7 +206,7 @@ function Dashboard() {
     filters?.weights.num_of_people,
     startDate
   ]);
-  console.log(info);
+
   useEffect(() => {
     if (startDate === null) {
       setEndDate(null);
@@ -191,150 +215,6 @@ function Dashboard() {
 
   useEffect(() => {
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const fetchArticles = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(`http://127.0.0.1:5000/get-articles`);
-
-      if (response.ok) {
-        const jsonData = await response.json();
-
-        // Indices to have unique IDs for TreeView
-        let monthIndex = 0;
-        let yearIndex = 0;
-
-        // Isolate neighborhoods
-        const quartieri: string[] = Array.from(
-          new Set(jsonData.map((article: Article) => article.quartiere))
-        );
-
-        // Create TreeView structure
-        const struttura: CustomTreeItem[] = quartieri.map(
-          (quartiere: string, index: number) => ({
-            id: "quartiere_" + index + 1,
-            label: getQuartiereName(quartiere),
-            children: []
-          })
-        );
-
-        const mesi: string[] = [
-          "January",
-          "February",
-          "March",
-          "April",
-          "May",
-          "June",
-          "July",
-          "August",
-          "September",
-          "October",
-          "November",
-          "December"
-        ];
-
-        const reverseMonths: string[] = mesi.reverse();
-
-        // Get month id and month name
-        const getMonthLabel = (
-          dateString: string
-        ): { id: string; label: string } => {
-          const date = new Date(dateString);
-          const month = date.getMonth();
-          const object = { id: "month_" + monthIndex, label: mesi[month] };
-          monthIndex += 1;
-          return object;
-        };
-
-        jsonData.forEach((article: Article) => {
-          // Check if neighborhood exists
-          const quartiere: CustomTreeItem | undefined = struttura.find(
-            (q) => q.label === getQuartiereName(article.quartiere || "")
-          );
-          if (quartiere) {
-            // Get year
-            const dateObj = new Date(article?.date.replace(" ", "T"));
-            const year = dateObj.getFullYear().toString();
-            const { id: monthId, label: monthLabel } = getMonthLabel(
-              article.date
-            );
-
-            // Push items into correct year
-            let yearNode: CustomTreeItem | undefined =
-              quartiere?.children?.find((y) => y.label === year);
-            if (!yearNode) {
-              yearNode = {
-                id: "year_" + yearIndex,
-                label: year,
-                children: []
-              };
-              yearIndex += 1;
-              quartiere?.children?.push(yearNode);
-            }
-
-            // Get month and push items into correct month
-            let month: CustomTreeItem | undefined = yearNode?.children?.find(
-              (m) => m.label === monthLabel
-            );
-            if (!month) {
-              month = { id: monthId, label: monthLabel, children: [] };
-              yearNode?.children?.push(month);
-            }
-
-            // Check if article already exists. This check is useful so that no duplicate articles can be found in the articles state
-            const alreadyIn: CustomTreeItem | undefined = month?.children?.find(
-              (m) => m.id === article.id.toString()
-            );
-
-            if (!alreadyIn) {
-              month?.children?.push({
-                id: article.id.toString(),
-                label: article.title || "",
-                url: article.link,
-                date: article.date,
-                isLastChild: true
-              });
-            }
-
-            // Sort by day
-            month?.children?.sort(
-              (a: CustomTreeItem, b: CustomTreeItem) =>
-                new Date(b?.date as string).getTime() -
-                new Date(a?.date as string).getTime()
-            );
-
-            // Sort by month
-            yearNode?.children?.sort((a: CustomTreeItem, b: CustomTreeItem) => {
-              const monthAIndex = reverseMonths.indexOf(a.label);
-              const monthBIndex = reverseMonths.indexOf(b.label);
-
-              return monthAIndex - monthBIndex;
-            });
-
-            // Sort by year
-            quartiere?.children?.sort(
-              (a: CustomTreeItem, b: CustomTreeItem) =>
-                parseInt(b.label) - parseInt(a.label)
-            );
-          }
-        });
-
-        setArticles(struttura);
-      } else {
-        console.error("Response error", response.status);
-      }
-    } catch (error) {
-      console.error("Request error", error);
-    }
-
-    setIsLoading(false);
-  }, []);
-
-  useEffect(() => {
-    fetchArticles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -402,10 +282,11 @@ function Dashboard() {
                   color={palette}
                   weights={info.weights || null}
                   minmax={info.minmax}
+                  legendValues={legendValues}
                 />
               </MapContainer>
             )}
-            <ChoroplethLegend palette={palette} />
+            <ChoroplethLegend palette={palette} legendValues={legendValues} />
           </div>
         )}
         {tab === 1 && data && (
@@ -415,6 +296,8 @@ function Dashboard() {
             minmax={info.minmax}
             articles={articles}
             filters={filters}
+            startDate={startDate}
+            endDate={endDate}
           />
         )}
       </div>

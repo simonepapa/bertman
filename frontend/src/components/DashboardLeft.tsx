@@ -1,3 +1,4 @@
+import { Filters } from "../types/global";
 import PaletteDisplay from "./PaletteDisplay";
 import TileDisplay from "./TileDisplay";
 import InfoIcon from "@mui/icons-material/Info";
@@ -16,21 +17,15 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { Dayjs } from "dayjs";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useCallback } from "react";
 
 type Props = {
   palette: string;
   setPalette: Dispatch<SetStateAction<string>>;
   tile: string;
   setTile: Dispatch<SetStateAction<string>>;
-  filters: {
-    [key: string]: { [key: string]: number };
-  };
-  setFilters: Dispatch<
-    SetStateAction<{
-      [key: string]: { [key: string]: number };
-    }>
-  >;
+  filters: Filters;
+  setFilters: Dispatch<SetStateAction<Filters>>;
   fetchData: () => void;
   startDate: Dayjs | null;
   endDate: Dayjs | null;
@@ -61,9 +56,9 @@ function DashboardLeft({
     setPalette(color);
   };
 
-  const handleFiltersChange = (crime: string, type: string) => {
+  const handleFiltersChange = (crime: string, type: keyof Filters) => {
     // State copy
-    const filtersCopy = filters;
+    const filtersCopy: Filters = { ...filters };
 
     filtersCopy[type][crime] = filtersCopy[type][crime] === 1 ? 0 : 1;
 
@@ -115,10 +110,25 @@ function DashboardLeft({
       },
       scaling: {
         minmax: 1
+      },
+      dates: {
+        startDate: null,
+        endDate: null
       }
     });
     handleResetDate();
   };
+
+  const handleApply = useCallback(() => {
+    fetchData();
+    setFilters({
+      ...filters,
+      dates: {
+        startDate,
+        endDate
+      }
+    });
+  }, [endDate, fetchData, filters, setFilters, startDate]);
 
   return (
     <div className="dashboard-left flex flex-col gap-10 xl:pr-4">
@@ -587,9 +597,9 @@ function DashboardLeft({
                   title={
                     <p className="text-sm">
                       Divides the crime index by the number of people for that
-                      neighborhood. WARNING: activating this and "number of
-                      articles" without scaling will result in all crime indices
-                      being rounded to 0.
+                      neighborhood. <br />
+                      <b>WARNING</b>: to prevent the index from being rounded to
+                      0, it will be multiplied by 10.000
                     </p>
                   }>
                   <IconButton>
@@ -635,7 +645,7 @@ function DashboardLeft({
         <Button
           variant="contained"
           className="!mx-auto !mt-4 w-full sm:!mr-0 sm:!ml-auto sm:w-fit"
-          onClick={fetchData}>
+          onClick={handleApply}>
           Apply
         </Button>
       </div>

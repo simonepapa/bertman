@@ -1,4 +1,5 @@
 import { TreeViewBaseItem } from "@mui/x-tree-view/models";
+import { Dayjs } from "dayjs";
 
 type Crime = {
   crime: string;
@@ -75,3 +76,21 @@ interface CustomTreeItem extends TreeViewBaseItem {
     children?: CustomTreeItem[];
   }[];
 }
+
+type Filters = {
+  crimes: {
+    [key: string]: number;
+  };
+  quartieri: {
+    [key: string]: number;
+  };
+  weights: {
+    [key: string]: number;
+  };
+  scaling: {
+    [key: string]: number;
+  };
+  dates: {
+    [key: string]: Dayjs | null;
+  };
+};

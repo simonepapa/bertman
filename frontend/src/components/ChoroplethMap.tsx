@@ -1,7 +1,7 @@
 import { Crime, InfoQuartiere } from "../types/global";
 import { Feature, GeoJsonObject } from "geojson";
 import { GeoJSONOptions, Layer, LeafletMouseEvent } from "leaflet";
-import { Dispatch, SetStateAction, useCallback } from "react";
+import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
 import { GeoJSON, useMap } from "react-leaflet";
 
 type Props = {
@@ -10,76 +10,79 @@ type Props = {
   color: string;
   weights: { [key: string]: boolean } | null;
   minmax: boolean;
+  legendValues: number[];
 };
 
-function ChoroplethMap({ setInfo, data, color, weights, minmax }: Props) {
+function ChoroplethMap({
+  setInfo,
+  data,
+  color,
+  weights,
+  minmax,
+  legendValues
+}: Props) {
   const map = useMap();
+
+  const colorScales: { [key: string]: string[] } = useMemo(
+    () => ({
+      red: [
+        "#7f0000",
+        "#b30000",
+        "#d7301f",
+        "#ef6548",
+        "#fc8d59",
+        "#fdbb84",
+        "#fdd49e",
+        "#fee8c8",
+        "#fff7ec"
+      ],
+      blue: [
+        "#023858",
+        "#045a8d",
+        "#0570b0",
+        "#3690c0",
+        "#74a9cf",
+        "#a6bddb",
+        "#d0d1e6",
+        "#ece7f2",
+        "#fff7fb"
+      ],
+      green: [
+        "#00441b",
+        "#006d2c",
+        "#238b45",
+        "#41ae76",
+        "#66c2a4",
+        "#99d8c9",
+        "#ccece6",
+        "#e5f5f9",
+        "#f7fcfd"
+      ]
+    }),
+    []
+  );
 
   const getColor = useCallback(
     (d: number) => {
-      if (color === "red") {
-        return d > 80
-          ? "#7f0000"
-          : d > 70
-            ? "#b30000"
-            : d > 60
-              ? "#d7301f"
-              : d > 50
-                ? "#ef6548"
-                : d > 40
-                  ? "#fc8d59"
-                  : d > 30
-                    ? "#fdbb84"
-                    : d > 20
-                      ? "#fdd49e"
-                      : d > 10
-                        ? "#fee8c8"
-                        : "#fff7ec";
-      } else if (color === "blue") {
-        return d > 80
-          ? "#023858"
-          : d > 70
-            ? "#045a8d"
-            : d > 60
-              ? "#0570b0"
-              : d > 50
-                ? "#3690c0"
-                : d > 40
-                  ? "#74a9cf"
-                  : d > 30
-                    ? "#a6bddb"
-                    : d > 20
-                      ? "#d0d1e6"
-                      : d > 10
-                        ? "#ece7f2"
-                        : "#fff7fb";
-      } else if (color === "green") {
-        return d > 80
-          ? "#00441b"
-          : d > 70
-            ? "#006d2c"
-            : d > 60
-              ? "#238b45"
-              : d > 50
-                ? "#41ae76"
-                : d > 40
-                  ? "#66c2a4"
-                  : d > 30
-                    ? "#99d8c9"
-                    : d > 20
-                      ? "#ccece6"
-                      : d > 10
-                        ? "#e5f5f9"
-                        : "#f7fcfd";
+      for (let i = 0; i < legendValues.length - 1; i++) {
+        if (d >= legendValues[i] && d < legendValues[i + 1]) {
+          return colorScales[color][colorScales[color].length - 1 - i];
+        }
       }
+
+      return colorScales[color][0];
     },
-    [color]
+    [color, colorScales, legendValues]
   );
 
   const style = useCallback(
     (feature: Feature) => {
       return {
-        fillColor: getColor(feature.properties?.crime_index_scalato),
+        fillColor: getColor(
+          minmax
+            ? feature.properties?.crime_index_scalato
+            : feature.properties?.crime_index
+        ),
         weight: 1,
         opacity: 1,
         color: "white",
@@ -87,7 +90,7 @@ function ChoroplethMap({ setInfo, data, color, weights, minmax }: Props) {
         fillOpacity: 0.5
       };
     },
-    [getColor]
+    [getColor, minmax]
   );
 
   const highlightFeature = useCallback(

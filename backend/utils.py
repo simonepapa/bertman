@@ -100,7 +100,10 @@ def analyze_quartieri(articles_df, quartieri_df, geojson_data, selected_crimes, 
               break
 
       # Save risk index in dataframe
-      quartieri_df.loc[quartieri_df['Quartiere'] == group, 'Indice di rischio'] = indice_di_rischio_totale
+      if weightsForPeople == 'true':
+        quartieri_df.loc[quartieri_df['Quartiere'] == group, 'Indice di rischio'] = indice_di_rischio_totale * 10000
+      else:
+        quartieri_df.loc[quartieri_df['Quartiere'] == group, 'Indice di rischio'] = indice_di_rischio_totale
 
     quartieri_df['Indice di rischio scalato'] = scaler.fit_transform(quartieri_df[['Indice di rischio']])
 

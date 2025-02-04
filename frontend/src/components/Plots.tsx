@@ -1,9 +1,10 @@
 import { getCrimeName, getQuartiereIndex } from "../helpers/utils";
-import { CustomTreeItem } from "../types/global";
+import { CustomTreeItem, Filters } from "../types/global";
 import { Card, Chip } from "@mui/material";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { PieChart } from "@mui/x-charts/PieChart";
+import dayjs, { Dayjs } from "dayjs";
 import { Feature, GeoJsonObject } from "geojson";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -12,9 +13,9 @@ type Props = {
   weights: { [key: string]: boolean } | null;
   minmax: boolean;
   articles: CustomTreeItem[] | null;
-  filters: {
-    [key: string]: { [key: string]: number };
-  };
+  filters: Filters;
+  startDate: Dayjs | null;
+  endDate: Dayjs | null;
 };
 
 function Plots({ data, weights, minmax, articles, filters }: Props) {
@@ -116,7 +117,21 @@ function Plots({ data, weights, minmax, articles, filters }: Props) {
             if (yearObj.children) {
               yearObj.children.forEach((monthObj) => {
                 if (monthObj.children) {
-                  crimes += monthObj.children.length;
+                  monthObj.children.forEach((crimeObj) => {
+                    const crimeDate = dayjs(crimeObj.date);
+
+                    if (
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      (crimeDate as any).isBetween(
+                        filters?.dates?.startDate,
+                        filters?.dates?.endDate,
+                        null,
+                        "[]"
+                      )
+                    ) {
+                      crimes += 1;
+                    }
+                  });
                 }
               });
             }
@@ -136,7 +151,12 @@ function Plots({ data, weights, minmax, articles, filters }: Props) {
 
       setCrimesByYear(final);
     }
-  }, [articles, filters.quartieri]);
+  }, [
+    articles,
+    filters.quartieri,
+    filters?.dates?.startDate,
+    filters?.dates?.endDate
+  ]);
 
   const countCrimesByYearAndNeighborhood = useCallback(() => {
     if (articles) {
@@ -162,7 +182,20 @@ function Plots({ data, weights, minmax, articles, filters }: Props) {
             if (yearObj.children) {
               yearObj.children.forEach((monthObj) => {
                 if (monthObj.children) {
-                  crimes += monthObj.children.length;
+                  monthObj.children.forEach((crimeObj) => {
+                    const crimeDate = dayjs(crimeObj.date);
+                    if (
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      (crimeDate as any).isBetween(
+                        filters?.dates?.startDate,
+                        filters?.dates?.endDate,
+                        null,
+                        "[]"
+                      )
+                    ) {
+                      crimes += 1;
+                    }
+                  });
                 }
               });
             }
@@ -189,7 +222,13 @@ function Plots({ data, weights, minmax, articles, filters }: Props) {
           })
       );
     }
-  }, [articles, filters.quartieri, quartieri]);
+  }, [
+    articles,
+    filters.quartieri,
+    filters?.dates?.startDate,
+    filters?.dates?.endDate,
+    quartieri
+  ]);
 
   const countCrimesByType = useCallback(() => {
     if (data) {
@@ -304,7 +343,7 @@ function Plots({ data, weights, minmax, articles, filters }: Props) {
               series={[
                 {
                   dataKey: minmax ? "crime_index_scalato" : "crime_index",
-                  label: "Scaled crime index",
+                  label: minmax ? "Scaled crime index" : "Crime index",
                   valueFormatter
                 }
               ]}

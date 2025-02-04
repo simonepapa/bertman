@@ -62,6 +62,9 @@ function Methodology() {
         optionally be weighted for these two factors. If so, then it will be
         divided by the number of crime per neighborhood and/or by the number of
         people in the neighborhood.
+        <br />
+        Note that, if the user decides to weigh by population, then the crime
+        index will be multiplied by 10.000.
       </p>
     </div>
   );
