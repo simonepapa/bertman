@@ -164,7 +164,7 @@ function Dashboard() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (jsonData as any)?.features.forEach((item: any) => {
           crimeIndexes.push(
-            jsonData.minmaxScaler === "true"
+            jsonData.minmaxScaler
               ? item.properties.crime_index_scalato
               : item.properties.crime_index
           );
@@ -178,14 +178,16 @@ function Dashboard() {
           )
         );
 
+        console.log(jsonData.minmaxScaler);
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setInfo((prevState: any) => ({
           ...prevState,
           weights: {
-            num_of_articles: jsonData.weightsForArticles === "true",
-            num_of_people: jsonData.weightsForPeople === "true"
+            num_of_articles: jsonData.weightsForArticles,
+            num_of_people: jsonData.weightsForPeople
           },
-          minmax: jsonData.minmaxScaler === "true"
+          minmax: jsonData.minmaxScaler
         }));
       } else {
         // eslint-disable-next-line no-console
