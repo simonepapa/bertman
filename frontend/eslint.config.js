@@ -62,12 +62,7 @@ export default [
       "react/jsx-pascal-case": "error",
       "react/no-direct-mutation-state": "error",
       "react/prefer-stateless-function": "error",
-      "react/no-multi-comp": [
-        "error",
-        {
-          ignoreStateless: false
-        }
-      ],
+      "react/no-multi-comp": "off",
       "react/function-component-definition": [
         "error",
         {

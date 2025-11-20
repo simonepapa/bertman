@@ -1,4 +1,5 @@
-import Navbar from "./components/Navbar";
+import Layout from "./components/Layout";
+import { ThemeProvider } from "./components/theme-provider";
 import Dashboard from "./pages/Dashboard";
 import LabelArticles from "./pages/LabelArticles";
 import Methodology from "./pages/Methodology";
@@ -15,54 +16,42 @@ function App() {
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <Navigate to="/dashboard" replace={true} />
-    },
-    {
-      path: "/dashboard",
-      element: (
-        <Navbar>
-          <Dashboard />
-        </Navbar>
-      )
-    },
-    {
-      path: "/solutions",
-      element: (
-        <Navbar>
-          <Solutions />
-        </Navbar>
-      )
-    },
-    {
-      path: "/read-articles",
-      element: (
-        <Navbar>
-          <ReadArticles />
-        </Navbar>
-      )
-    },
-    {
-      path: "/label-articles",
-      element: (
-        <Navbar>
-          <LabelArticles />
-        </Navbar>
-      )
-    },
-    {
-      path: "/methodology",
-      element: (
-        <Navbar>
-          <Methodology />
-        </Navbar>
-      )
+      element: <Layout />,
+      children: [
+        {
+          path: "/",
+          element: <Navigate to="/dashboard" replace={true} />
+        },
+        {
+          path: "/dashboard",
+          element: <Dashboard />
+        },
+        {
+          path: "/solutions",
+          element: <Solutions />
+        },
+        {
+          path: "/read-articles",
+          element: <ReadArticles />
+        },
+        {
+          path: "/label-articles",
+          element: <LabelArticles />
+        },
+        {
+          path: "/methodology",
+          element: <Methodology />
+        }
+      ]
     }
   ]);
 
   return (
-    <SnackbarProvider>
-      <RouterProvider router={router} />
-    </SnackbarProvider>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <SnackbarProvider>
+        <RouterProvider router={router} />
+      </SnackbarProvider>
+    </ThemeProvider>
   );
 }
 

@@ -3,7 +3,6 @@
     "@trivago/prettier-plugin-sort-imports",
     "prettier-plugin-tailwindcss"
   ],
-  "parser": "typescript",
   "overrides": [
     {
       "files": "*.css",
@@ -19,5 +18,6 @@
   "jsxSingleQuote": false,
   "trailingComma": "none",
   "bracketSameLine": true,
-  "bracketSpacing": true
+  "bracketSpacing": true,
+  "endOfLine": "lf"
 }
