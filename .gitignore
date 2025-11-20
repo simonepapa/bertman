@@ -1,2 +1,4 @@
 /node_modules
-backend/data/bert_fine_tuned_model/model.safetensors
+backend/api/node_modules
+backend/classifier/data/bert_fine_tuned_model/model.safetensors
+backend/classifier/__pycache__
