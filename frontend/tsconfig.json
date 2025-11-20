@@ -28,8 +28,10 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "*": ["./types/*.d.ts"]
+      "*": ["./types/*.d.ts"],
+      "@/*": ["./src/*"]
     },
+    "baseUrl": ".",
   },
   "include": ["src/**/*"],
   "references": [
