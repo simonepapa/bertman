@@ -1,9 +1,200 @@
 import { Router, Request, Response } from "express";
+import sqlite3 from "sqlite3";
+import fs from "fs";
+import { analyze_quartieri, calculate_statistics } from "../utils";
 
 const router = Router();
+const dbPath = "../classifier/database.db";
+const quartieriJsonPath = "../classifier/data/quartieri.json";
 
-router.get("/", (req: Request, res: Response) => {
-  res.json({ message: "Test API" });
+// Helper to get DB connection
+const getDb = () => {
+  return new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+      console.error("Could not connect to database", err);
+    }
+  });
+};
+
+router.get("/get-data", (req: Request, res: Response) => {
+  const startDate = (req.query.startDate as string) || "";
+  const endDate = (req.query.endDate as string) || "";
+  let crimes = (req.query.crimes as string) || "";
+  let quartieri = (req.query.quartieri as string) || "";
+  const weightsForArticles = req.query.weightsForArticles !== "false";
+  const weightsForPeople = req.query.weightsForPeople === "true";
+  const minmaxScaler = req.query.minmaxScaler !== "false";
+
+  if (
+    !crimes ||
+    (crimes.split(",").length <= 1 && crimes.split(",")[0] === "")
+  ) {
+    crimes =
+      "omicidio,omicidio_colposo,omicidio_stradale,tentato_omicidio,furto,rapina,violenza_sessuale,aggressione,spaccio,truffa,estorsione,associazione_di_tipo_mafioso";
+  }
+
+  if (
+    !quartieri ||
+    (quartieri.split(",").length <= 1 && quartieri.split(",")[0] === "")
+  ) {
+    quartieri =
+      "bari-vecchia_san-nicola,carbonara,carrassi,ceglie-del-campo,japigia,liberta,loseto,madonnella,murat,palese-macchie,picone,san-paolo,san-pasquale,santo-spirito,stanic,torre-a-mare,san-girolamo_fesca";
+  }
+
+  const crimesList = crimes.split(",");
+  const quartieriList = quartieri.split(",");
+
+  const quartieri_data = quartieriList.map((quartiere) => ({
+    Quartiere: quartiere,
+    "Totale crimini": 0,
+    "Indice di rischio": 0,
+    "Indice di rischio normalizzato": 0,
+  }));
+
+  // Read all articles from the database
+  const db = getDb();
+  let query = "SELECT * FROM articles";
+  const params: any[] = [];
+
+  if (startDate && endDate) {
+    query += " WHERE date BETWEEN ? AND ?";
+    params.push(startDate, endDate);
+  }
+
+  db.all(query, params, (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      db.close();
+      return;
+    }
+
+    const articles_df = rows;
+
+    fs.readFile(quartieriJsonPath, "utf8", (err, data) => {
+      if (err) {
+        res.status(500).json({ error: "Could not read quartieri.json" });
+        db.close();
+        return;
+      }
+
+      let geojson_data = {
+        type: "FeatureCollection",
+        features: [] as any[],
+      };
+
+      const geometry_json = JSON.parse(data);
+
+      quartieriList.forEach((quartiere) => {
+        const matching_quartiere = geometry_json.find(
+          (feature: any) => feature.python_id === quartiere,
+        );
+
+        if (matching_quartiere) {
+          geojson_data.features.push({
+            type: "Feature",
+            properties: {
+              name: matching_quartiere.name,
+              python_id: matching_quartiere.python_id,
+            },
+            geometry: matching_quartiere.geometry,
+          });
+        }
+      });
+
+      // Analysis
+      const analyzed_geojson = analyze_quartieri(
+        articles_df,
+        quartieri_data,
+        geojson_data,
+        crimesList,
+        weightsForArticles,
+        weightsForPeople,
+        minmaxScaler,
+      );
+
+      // Statistics
+      const final_geojson = calculate_statistics(
+        quartieri_data,
+        analyzed_geojson,
+      );
+
+      res.json(final_geojson);
+      db.close();
+    });
+  });
+});
+
+router.get("/get-articles", (req: Request, res: Response) => {
+  const db = getDb();
+  db.all("SELECT * FROM articles", [], (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.json(rows);
+    }
+    db.close();
+  });
+});
+
+router.post("/upload-to-database", (req: Request, res: Response) => {
+  const { jsonFile } = req.body;
+  if (!jsonFile || !Array.isArray(jsonFile)) {
+    res.status(400).send("Invalid input");
+    return;
+  }
+
+  const db = getDb();
+  const stmt = db.prepare(`
+    INSERT INTO articles (link, quartiere, title, date, content, omicidio, omicidio_prob, omicidio_colposo, omicidio_colposo_prob, omicidio_stradale, omicidio_stradale_prob, tentato_omicidio, tentato_omicidio_prob, furto, furto_prob, rapina, rapina_prob, violenza_sessuale, violenza_sessuale_prob, aggressione, aggressione_prob, spaccio, spaccio_prob, truffa, truffa_prob, estorsione, estorsione_prob, contrabbando, contrabbando_prob, associazione_di_tipo_mafioso, associazione_di_tipo_mafioso_prob)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  db.serialize(() => {
+    jsonFile.forEach((item: any) => {
+      stmt.run(
+        item.link || "",
+        item.python_id || "",
+        item.title || "",
+        item.date || "",
+        item.content || "",
+        item.omicidio?.value,
+        item.omicidio?.prob,
+        item.omicidio_colposo?.value,
+        item.omicidio_colposo?.prob,
+        item.omicidio_stradale?.value,
+        item.omicidio_stradale?.prob,
+        item.tentato_omicidio?.value,
+        item.tentato_omicidio?.prob,
+        item.furto?.value,
+        item.furto?.prob,
+        item.rapina?.value,
+        item.rapina?.prob,
+        item.violenza_sessuale?.value,
+        item.violenza_sessuale?.prob,
+        item.aggressione?.value,
+        item.aggressione?.prob,
+        item.spaccio?.value,
+        item.spaccio?.prob,
+        item.truffa?.value,
+        item.truffa?.prob,
+        item.estorsione?.value,
+        item.estorsione?.prob,
+        item.contrabbando?.value,
+        item.contrabbando?.prob,
+        item.associazione_di_tipo_mafioso?.value,
+        item.associazione_di_tipo_mafioso?.prob,
+      );
+    });
+    stmt.finalize();
+  });
+
+  db.close((err) => {
+    if (err) {
+      res.status(500).send("Error uploading to database");
+    } else {
+      res.send("Uploaded file succesfully");
+    }
+  });
 });
 
 export default router;

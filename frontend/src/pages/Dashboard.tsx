@@ -152,7 +152,7 @@ function Dashboard() {
       const queryString = queryParams.join("&");
 
       const response = await fetch(
-        `http://127.0.0.1:5000/get-data?${queryString}`
+        `http://127.0.0.1:3000/api/get-data?${queryString}`
       );
 
       if (response.ok) {

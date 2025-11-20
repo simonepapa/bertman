@@ -78,16 +78,19 @@ function LabelArticles() {
         setIsLoading(true);
 
         try {
-          const response = await fetch(`http://127.0.0.1:5000/label-articles`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              jsonFile: articles,
-              quartiere: quartiere
-            })
-          });
+          const response = await fetch(
+            `http://127.0.0.1:5000/classifier/label-articles`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                jsonFile: articles,
+                quartiere: quartiere
+              })
+            }
+          );
 
           if (response.ok) {
             const labeledArticles = await response.json();
@@ -121,7 +124,7 @@ function LabelArticles() {
 
       try {
         const response = await fetch(
-          `http://127.0.0.1:5000/upload-to-database`,
+          `http://127.0.0.1:3000/api/upload-to-database`,
           {
             method: "POST",
             headers: {

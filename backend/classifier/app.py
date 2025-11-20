@@ -116,7 +116,7 @@ def get_articles():
 
     return json.dumps(json.loads(articles_df.to_json(orient="records")))
 
-@app.route('/label-articles', methods=['POST'])
+@app.route('/classifier/label-articles', methods=['POST'])
 def label_articles():
     data = request.get_json()
 
