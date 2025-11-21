@@ -1,3 +1,4 @@
+import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -35,6 +36,7 @@ function Navbar() {
               {link.name}
             </Link>
           ))}
+          <ModeToggle />
         </div>
 
         {/* Mobile Menu */}
@@ -58,6 +60,9 @@ function Navbar() {
                     {link.name}
                   </Link>
                 ))}
+                <div className="flex justify-start pt-4">
+                  <ModeToggle />
+                </div>
               </div>
             </SheetContent>
           </Sheet>
