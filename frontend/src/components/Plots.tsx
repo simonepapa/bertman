@@ -1,23 +1,48 @@
 import { getCrimeName, getQuartiereIndex } from "../helpers/utils";
-import { CustomTreeItem, Filters } from "../types/global";
-import { Card, Chip } from "@mui/material";
-import { BarChart } from "@mui/x-charts/BarChart";
-import { LineChart } from "@mui/x-charts/LineChart";
-import { PieChart } from "@mui/x-charts/PieChart";
+import { Article, CustomTreeItem, Filters } from "../types/global";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent
+} from "@/components/ui/chart";
 import { Feature, GeoJsonObject } from "geojson";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  XAxis,
+  YAxis
+} from "recharts";
 
 type Props = {
   data: GeoJsonObject | null;
   weights: { [key: string]: boolean } | null;
   minmax: boolean;
   articles: CustomTreeItem[] | null;
+  treeArticles: Article[] | null;
   filters: Filters;
   startDate: Date | null;
   endDate: Date | null;
 };
 
-function Plots({ data, weights, minmax, articles, filters }: Props) {
+function Plots({
+  data,
+  weights,
+  minmax,
+  articles,
+  treeArticles,
+  filters
+}: Props) {
   const [crimesByYear, setCrimesByYear] = useState<
     | {
         [key: string]: number | string;
@@ -92,14 +117,36 @@ function Plots({ data, weights, minmax, articles, filters }: Props) {
     })
   ];
 
-  const valueFormatter = (value: number | null) => {
-    return `${value}`;
-  };
+  // Index articles by their ID to optimize the search on treeArticles
+  const articlesMap = useMemo(() => {
+    if (!treeArticles) return new Map<string, Article>();
+    return new Map(
+      treeArticles.map((article) => [article.id.toString(), article])
+    );
+  }, [treeArticles]);
 
   const countCrimesByYear = useCallback(() => {
     if (articles) {
       const crimeCountByYear: { [key: string]: number } = {};
+      const articleCountByYear: { [key: string]: number } = {};
       const final: { [key: string]: number | string }[] = [];
+
+      // Crime-related properties to check
+      const crimeProperties = [
+        "aggressione",
+        "associazione_di_tipo_mafioso",
+        "contrabbando",
+        "estorsione",
+        "furto",
+        "omicidio",
+        "omicidio_colposo",
+        "omicidio_stradale",
+        "rapina",
+        "spaccio",
+        "tentato_omicidio",
+        "truffa",
+        "violenza_sessuale"
+      ];
 
       const filteredArticles = articles.filter((obj: CustomTreeItem) => {
         const quartiere_index = getQuartiereIndex(obj.label);
@@ -112,6 +159,7 @@ function Plots({ data, weights, minmax, articles, filters }: Props) {
           area.children.forEach((yearObj) => {
             const year = yearObj.label;
             let crimes = 0;
+            let totalArticles = 0;
 
             if (yearObj.children) {
               yearObj.children.forEach((monthObj) => {
@@ -128,7 +176,22 @@ function Plots({ data, weights, minmax, articles, filters }: Props) {
                       (!endDate || crimeDate <= endDate);
 
                     if (isInRange) {
-                      crimes += 1;
+                      // Count all articles
+                      totalArticles += 1;
+
+                      // Find the full article object from the map
+                      const fullArticle = articlesMap.get(crimeObj.id);
+
+                      // Check if article has any crime-related property set to 1
+                      if (fullArticle) {
+                        const hasCrime = crimeProperties.some(
+                          (prop) => fullArticle[prop as keyof Article] === 1
+                        );
+
+                        if (hasCrime) {
+                          crimes += 1;
+                        }
+                      }
                     }
                   });
                 }
@@ -136,6 +199,8 @@ function Plots({ data, weights, minmax, articles, filters }: Props) {
             }
 
             crimeCountByYear[year] = (crimeCountByYear[year] || 0) + crimes;
+            articleCountByYear[year] =
+              (articleCountByYear[year] || 0) + totalArticles;
           });
         }
       });
@@ -144,7 +209,8 @@ function Plots({ data, weights, minmax, articles, filters }: Props) {
         final.push({
           year: parseInt(year),
           label: year,
-          crimes: crimeCountByYear[year]
+          crimes: crimeCountByYear[year],
+          articles: articleCountByYear[year]
         });
       });
 
@@ -152,6 +218,7 @@ function Plots({ data, weights, minmax, articles, filters }: Props) {
     }
   }, [
     articles,
+    articlesMap,
     filters.quartieri,
     filters?.dates?.startDate,
     filters?.dates?.endDate
@@ -298,122 +365,196 @@ function Plots({ data, weights, minmax, articles, filters }: Props) {
     <div className="xl:pl-4">
       {weights &&
         Object.keys(weights).some((weight: string) => weights[weight]) && (
-          <div className="mb-4 flex flex-wrap gap-2">
+          <div className="mb-4 flex flex-wrap items-center gap-2">
             <p className="text-base font-bold">Weights and scaling:</p>
-            {minmax && (
-              <Chip color="primary" label="MINMAX SCALED" size="small" />
-            )}
+            {minmax && <Badge variant="default">MINMAX SCALED</Badge>}
             {weights.num_of_articles && (
-              <Chip color="primary" label="NO. OF ARTICLES" size="small" />
+              <Badge variant="default">NO. OF ARTICLES</Badge>
             )}
             {weights.num_of_people && (
-              <Chip color="primary" label="NO. OF PEOPLE" size="small" />
+              <Badge variant="default">NO. OF PEOPLE</Badge>
             )}
           </div>
         )}
       {data && barDataset && crimesByType && (
         <div className="flex flex-col gap-4 xl:flex-row">
-          <Card className="!flex !w-full !flex-col !gap-2 p-4 xl:!w-1/2">
-            <h2 className="text-lg font-bold">Crime index per neighborhood</h2>
-            <BarChart
-              dataset={barDataset}
-              xAxis={[
-                {
-                  scaleType: "band",
-                  dataKey: "name",
-                  tickPlacement: "middle"
+          <Card className="bg-accent w-full xl:w-1/2">
+            <CardHeader>
+              <CardTitle>Crime index per neighborhood</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer
+                config={
+                  {
+                    crimeIndex: {
+                      label: minmax ? "Scaled crime index" : "Crime index",
+                      color: "var(--primary)"
+                    }
+                  } satisfies ChartConfig
                 }
-              ]}
-              height={400}
-              margin={{ bottom: 80 }}
-              bottomAxis={{
-                labelStyle: {
-                  fontSize: 14,
-                  transform: `translateY(${
-                    // Hack that should be added in the lib latter.
-                    5 * Math.abs(Math.sin((Math.PI * 45) / 180))
-                  }px)`
-                },
-                tickLabelStyle: {
-                  angle: 45,
-                  textAnchor: "start",
-                  fontSize: 12
-                }
-              }}
-              series={[
-                {
-                  dataKey: minmax ? "crime_index_scalato" : "crime_index",
-                  label: minmax ? "Scaled crime index" : "Crime index",
-                  valueFormatter
-                }
-              ]}
-            />
+                className="min-h-[400px] w-full">
+                <BarChart
+                  accessibilityLayer={true}
+                  data={barDataset}
+                  margin={{ bottom: 80, left: 12, right: 12 }}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="name"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis tickLine={false} axisLine={false} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar
+                    dataKey={minmax ? "crime_index_scalato" : "crime_index"}
+                    fill="var(--primary)"
+                    radius={4}
+                  />
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
           </Card>
-          <Card className="!flex !w-full !flex-col !gap-2 p-4 xl:!w-1/2">
-            <h2 className="text-lg font-bold">Most common crimes in Bari</h2>
-            <PieChart
-              dataset={barDataset}
-              colors={colors}
-              height={400}
-              series={[
-                {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  data: crimesByType as any,
-                  highlightScope: { fade: "global", highlight: "item" }
+          <Card className="bg-accent w-full xl:w-1/2">
+            <CardHeader>
+              <CardTitle>Most common crimes in Bari</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer
+                config={
+                  crimesByType?.reduce((acc, crime, index) => {
+                    acc[crime.label as string] = {
+                      label: crime.label as string,
+                      color: colors[index % colors.length]
+                    };
+                    return acc;
+                  }, {} as ChartConfig) || {}
                 }
-              ]}
-            />
+                className="min-h-[400px] w-full">
+                <PieChart>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Legend />
+                  <Pie
+                    data={crimesByType || []}
+                    dataKey="value"
+                    nameKey="label"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={120}>
+                    {crimesByType?.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={colors[index % colors.length]}
+                      />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ChartContainer>
+            </CardContent>
           </Card>
         </div>
       )}
       {articles && (
-        <Card className="!mt-4 !flex !flex-col !gap-2 p-4">
-          <h2 className="text-lg font-bold">
-            Evolution of crimes in Bari by year
-          </h2>
-          <div className="flex flex-col flex-wrap gap-4 xl:flex-row xl:justify-between">
-            <Card className="!w-full">
-              <LineChart
-                colors={colors}
-                xAxis={[
-                  {
-                    dataKey: "year",
-                    valueFormatter: (value) => value.toString(),
-                    max: 2025,
-                    min: 2011
-                  }
-                ]}
-                series={[
-                  {
-                    dataKey: "crimes",
-                    label: "Crimes"
-                  }
-                ]}
-                height={400}
-                dataset={crimesByYear || []}
-              />
-            </Card>
-            <Card className="!w-full">
-              <LineChart
-                colors={colors}
-                xAxis={[
-                  {
-                    dataKey: "year",
-                    valueFormatter: (value) => value.toString(),
-                    max: 2025,
-                    min: 2011
-                  }
-                ]}
-                series={Object.keys(keyToLabels).map((key) => ({
-                  dataKey: key,
-                  label: keyToLabels[key],
-                  showMark: false
-                }))}
-                height={400}
-                dataset={crimesByYearQuartiere || []}
-              />
-            </Card>
-          </div>
+        <Card className="bg-accent mt-4">
+          <CardHeader>
+            <CardTitle>Evolution of crimes in Bari by year</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col flex-wrap gap-4 xl:flex-row xl:justify-between">
+              <Card className="w-full">
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    Crimes and Articles by Year
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer
+                    config={
+                      {
+                        crimes: {
+                          label: "Crime Articles",
+                          color: "var(--primary)"
+                        },
+                        articles: {
+                          label: "Total Articles",
+                          color: "var(--chart-2)"
+                        }
+                      } satisfies ChartConfig
+                    }
+                    className="min-h-[400px] w-full">
+                    <LineChart
+                      data={crimesByYear || []}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="year" />
+                      <YAxis />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="crimes"
+                        stroke="var(--primary)"
+                        strokeWidth={3}
+                        dot={{ fill: "var(--primary)", r: 4 }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="articles"
+                        stroke="var(--chart-2)"
+                        strokeWidth={3}
+                        dot={{ fill: "var(--chart-2)", r: 4 }}
+                      />
+                    </LineChart>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+              <Card className="w-full">
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    Crimes by Year and Neighborhood
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer
+                    config={Object.keys(keyToLabels).reduce(
+                      (acc, key, index) => {
+                        acc[key] = {
+                          label: keyToLabels[key],
+                          color: colors[index % colors.length]
+                        };
+                        return acc;
+                      },
+                      {} as ChartConfig
+                    )}
+                    className="min-h-[400px] w-full">
+                    <LineChart
+                      data={crimesByYearQuartiere || []}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="year" />
+                      <YAxis />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Legend />
+                      {Object.keys(keyToLabels).map((key, index) => (
+                        <Line
+                          key={key}
+                          type="monotone"
+                          dataKey={key}
+                          stroke={colors[index % colors.length]}
+                          strokeWidth={2}
+                          dot={false}
+                        />
+                      ))}
+                    </LineChart>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+            </div>
+          </CardContent>
         </Card>
       )}
     </div>

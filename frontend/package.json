@@ -45,6 +45,7 @@
     "react-leaflet": "^5.0.0",
     "react-multi-date-picker": "^4.5.2",
     "react-router-dom": "^7.1.5",
+    "recharts": "^2.15.4",
     "tailwind-merge": "^3.4.0",
     "theme-change": "^2.5.0"
   },
