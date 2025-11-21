@@ -22,9 +22,11 @@ function Navbar() {
   ];
 
   return (
-    <nav className="bg-background border-b">
-      <div className="flex h-16 items-center justify-between px-4 lg:px-16">
-        <p className="text-lg font-bold">BERTMAN</p>
+    <nav className="bg-card border-b">
+      <div className="flex h-16 items-center justify-between px-4">
+        <Link to="/" className="hover:text-primary text-lg font-bold">
+          BERTMAN
+        </Link>
 
         {/* Desktop Menu */}
         <div className="hidden items-center space-x-8 md:flex">

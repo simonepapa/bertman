@@ -275,7 +275,7 @@ function Dashboard() {
                 <ChevronsUpDown className="h-5 w-5 transition-transform duration-200 group-data-[state=open]:rotate-180" />
               </div>
             </CollapsibleTrigger>
-            <CollapsibleContent className="bg-background animate-slide-down data-[state=closed]:animate-slide-up max-h-[60vh] overflow-y-auto p-4">
+            <CollapsibleContent className="bg-card animate-slide-down data-[state=closed]:animate-slide-up max-h-[60vh] overflow-y-auto p-4">
               <Plots
                 data={data}
                 weights={info.weights || null}

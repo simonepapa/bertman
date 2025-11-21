@@ -477,8 +477,8 @@ function Plots({
             <CardTitle>Evolution of crimes in Bari by year</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col flex-wrap gap-4 xl:flex-row xl:justify-between">
-              <Card className="w-full">
+            <div className="flex flex-col gap-4 xl:flex-row">
+              <Card className="w-full xl:flex-1">
                 <CardHeader>
                   <CardTitle className="text-base">
                     Crimes and Articles by Year
@@ -540,7 +540,7 @@ function Plots({
                   </ChartContainer>
                 </CardContent>
               </Card>
-              <Card className="w-full">
+              <Card className="w-full xl:flex-1">
                 <CardHeader>
                   <CardTitle className="text-base">
                     Crimes by Year and Neighborhood
@@ -558,7 +558,7 @@ function Plots({
                       },
                       {} as ChartConfig
                     )}
-                    className="min-h-[400px] w-full">
+                    className="min-h-[250px] w-full">
                     <LineChart
                       data={crimesByYearQuartiere || []}
                       margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
