@@ -5,10 +5,15 @@ import InfoCard from "../components/InfoCard";
 import Plots from "../components/Plots";
 import useFetchArticles from "../helpers/hooks/useFetchArticles";
 import { Filters, InfoQuartiere } from "../types/global";
-import ArrowCircleUpIcon from "@mui/icons-material/ArrowCircleUp";
-import { CircularProgress, Tab, Tabs } from "@mui/material";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger
+} from "@/components/ui/collapsible";
 import { GeoJsonObject } from "geojson";
 import { LatLngExpression } from "leaflet";
+import { ArrowUp, Loader2 } from "lucide-react";
+import { BarChart3, ChevronsUpDown } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
 
@@ -79,14 +84,9 @@ function Dashboard() {
   const [data, setData] = useState<GeoJsonObject | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [tab, setTab] = useState<number>(0);
   const [legendValues, setLegendValues] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { articles } = useFetchArticles(setIsLoading, false);
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTab(newValue);
-  };
 
   const position: LatLngExpression = [41.117143, 16.871871];
 
@@ -100,13 +100,6 @@ function Dashboard() {
       top: 0,
       behavior: "smooth"
     });
-  };
-
-  const a11yProps = (index: number) => {
-    return {
-      id: `simple-tab-${index}`,
-      "aria-controls": `simple-tabpanel-${index}`
-    };
   };
 
   const fetchData = useCallback(async () => {
@@ -234,69 +227,66 @@ function Dashboard() {
           handleResetDate={handleResetDate}
         />
       </div>
-      <div
-        className={`relative w-full px-4 xl:min-h-screen xl:w-[75%] xl:px-0 ${tab === 0 ? "h-[800px]" : "h-fit"}`}>
-        <Tabs
-          value={tab}
-          onChange={handleTabChange}
-          aria-label="Map and plots"
-          variant="fullWidth"
-          sx={{
-            my: 2,
-            "& button": {
-              fontWeight: 700
-            }
-          }}>
-          <Tab disabled={isLoading} label="Map" {...a11yProps(0)} />
-          <Tab disabled={isLoading} label="Plots" {...a11yProps(1)} />
-        </Tabs>
-        {tab === 0 && (
-          <div className="relative h-full w-full bg-[#262626]">
-            <ArrowCircleUpIcon
-              className="!sticky !top-8 !left-2 !z-[10500] !h-12 !w-12 !text-white xl:!hidden"
-              onClick={scrollToTop}
-            />
-            <InfoCard
-              name={info.name}
-              crime_index={info.crime_index}
-              crimes={info.crimes}
-              weights={info.weights || null}
-              population={info.population}
-              minmax={info.minmax}
-            />
-            {isLoading ? (
-              <CircularProgress className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-            ) : (
-              <MapContainer
-                className="h-full w-full"
-                center={position}
-                maxBoundsViscosity={1.0}
-                zoom={12}
-                scrollWheelZoom={true}>
-                <TileLayer url={tile} />
-                <ChoroplethMap
-                  setInfo={setInfo}
-                  data={data}
-                  color={palette}
-                  weights={info.weights || null}
-                  minmax={info.minmax}
-                  legendValues={legendValues}
-                />
-              </MapContainer>
-            )}
-            <ChoroplethLegend palette={palette} legendValues={legendValues} />
-          </div>
-        )}
-        {tab === 1 && data && (
-          <Plots
-            data={data}
-            weights={info.weights || null}
-            minmax={info.minmax}
-            articles={articles}
-            filters={filters}
-            startDate={startDate}
-            endDate={endDate}
+      <div className="relative w-full px-4 xl:min-h-screen xl:w-[80%] xl:px-0">
+        <div className="relative h-[800px] w-full bg-[#262626] xl:h-screen">
+          <ArrowUp
+            className="!sticky !top-8 !left-2 !z-[10500] !h-12 !w-12 !text-white xl:!hidden"
+            onClick={scrollToTop}
           />
+          <InfoCard
+            name={info.name}
+            crime_index={info.crime_index}
+            crimes={info.crimes}
+            weights={info.weights || null}
+            population={info.population}
+            minmax={info.minmax}
+          />
+          {isLoading ? (
+            <Loader2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin" />
+          ) : (
+            <MapContainer
+              className="h-full w-full"
+              center={position}
+              maxBoundsViscosity={1.0}
+              zoom={12}
+              scrollWheelZoom={true}>
+              <TileLayer url={tile} />
+              <ChoroplethMap
+                setInfo={setInfo}
+                data={data}
+                color={palette}
+                weights={info.weights || null}
+                minmax={info.minmax}
+                legendValues={legendValues}
+              />
+            </MapContainer>
+          )}
+          <ChoroplethLegend palette={palette} legendValues={legendValues} />
+        </div>
+
+        {data && (
+          <Collapsible className="bg-card fixed right-0 bottom-0 z-[10000] w-full rounded-t-xl border-x border-t shadow-[0_-8px_30px_rgba(0,0,0,0.12)] xl:w-[80%]">
+            <CollapsibleTrigger asChild={true}>
+              <div className="group bg-primary text-primary-foreground hover:bg-primary/90 flex w-full cursor-pointer items-center justify-between rounded-t-xl px-6 py-4 transition-colors">
+                <div className="flex items-center gap-3">
+                  <BarChart3 className="h-5 w-5" />
+                  <span className="text-lg font-semibold">View Analytics</span>
+                </div>
+                <ChevronsUpDown className="h-5 w-5 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="bg-background animate-slide-down data-[state=closed]:animate-slide-up max-h-[60vh] overflow-y-auto p-4">
+              <Plots
+                data={data}
+                weights={info.weights || null}
+                minmax={info.minmax}
+                articles={articles}
+                filters={filters}
+                startDate={startDate}
+                endDate={endDate}
+              />
+            </CollapsibleContent>
+          </Collapsible>
         )}
       </div>
     </div>
