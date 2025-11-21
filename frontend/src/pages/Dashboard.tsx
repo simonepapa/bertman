@@ -7,7 +7,6 @@ import useFetchArticles from "../helpers/hooks/useFetchArticles";
 import { Filters, InfoQuartiere } from "../types/global";
 import ArrowCircleUpIcon from "@mui/icons-material/ArrowCircleUp";
 import { CircularProgress, Tab, Tabs } from "@mui/material";
-import dayjs, { Dayjs } from "dayjs";
 import { GeoJsonObject } from "geojson";
 import { LatLngExpression } from "leaflet";
 import { useCallback, useEffect, useState } from "react";
@@ -78,8 +77,8 @@ function Dashboard() {
     minmax: true
   });
   const [data, setData] = useState<GeoJsonObject | null>(null);
-  const [startDate, setStartDate] = useState<Dayjs | null>(null);
-  const [endDate, setEndDate] = useState<Dayjs | null>(null);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [tab, setTab] = useState<number>(0);
   const [legendValues, setLegendValues] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -90,11 +89,6 @@ function Dashboard() {
   };
 
   const position: LatLngExpression = [41.117143, 16.871871];
-
-  const handleChangeStartDate = (newDate: Dayjs | null) => {
-    setStartDate(newDate);
-    setEndDate(dayjs());
-  };
 
   const handleResetDate = () => {
     setStartDate(null);
@@ -131,14 +125,18 @@ function Dashboard() {
       queryParams.push(`quartieri=${selectedQuartieri}`);
 
       if (startDate) {
-        queryParams.push(
-          `startDate=${dayjs(startDate).format("YYYY-MM-DD HH:mm:ss")}`
-        );
+        const formattedStartDate = startDate
+          .toISOString()
+          .slice(0, 19)
+          .replace("T", " ");
+        queryParams.push(`startDate=${formattedStartDate}`);
       }
       if (endDate) {
-        queryParams.push(
-          `endDate=${dayjs(endDate).format("YYYY-MM-DD HH:mm:ss")}`
-        );
+        const formattedEndDate = endDate
+          .toISOString()
+          .slice(0, 19)
+          .replace("T", " ");
+        queryParams.push(`endDate=${formattedEndDate}`);
       }
       queryParams.push(
         `${filters?.weights.num_of_articles === 1 ? "weightsForArticles=true" : "weightsForArticles=false"}`
@@ -177,8 +175,6 @@ function Dashboard() {
             parseFloat((minCrime + i * step).toFixed(2))
           )
         );
-
-        console.log(jsonData.minmaxScaler);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setInfo((prevState: any) => ({
@@ -222,7 +218,7 @@ function Dashboard() {
 
   return (
     <div className="flex flex-col gap-8 xl:flex-row xl:gap-0">
-      <div className="relative h-fit w-full p-4 xl:min-h-screen xl:w-[25%] xl:pr-0">
+      <div className="relative h-fit w-full p-4 xl:min-h-screen xl:w-[20%]">
         <DashboardLeft
           palette={palette}
           setPalette={setPalette}
@@ -234,7 +230,7 @@ function Dashboard() {
           startDate={startDate}
           endDate={endDate}
           setEndDate={setEndDate}
-          handleChangeStartDate={handleChangeStartDate}
+          setStartDate={setStartDate}
           handleResetDate={handleResetDate}
         />
       </div>

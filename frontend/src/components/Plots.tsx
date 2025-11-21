@@ -4,7 +4,6 @@ import { Card, Chip } from "@mui/material";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { PieChart } from "@mui/x-charts/PieChart";
-import dayjs, { Dayjs } from "dayjs";
 import { Feature, GeoJsonObject } from "geojson";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -14,8 +13,8 @@ type Props = {
   minmax: boolean;
   articles: CustomTreeItem[] | null;
   filters: Filters;
-  startDate: Dayjs | null;
-  endDate: Dayjs | null;
+  startDate: Date | null;
+  endDate: Date | null;
 };
 
 function Plots({ data, weights, minmax, articles, filters }: Props) {
@@ -118,17 +117,17 @@ function Plots({ data, weights, minmax, articles, filters }: Props) {
               yearObj.children.forEach((monthObj) => {
                 if (monthObj.children) {
                   monthObj.children.forEach((crimeObj) => {
-                    const crimeDate = dayjs(crimeObj.date);
+                    if (!crimeObj.date) return;
 
-                    if (
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      (crimeDate as any).isBetween(
-                        filters?.dates?.startDate,
-                        filters?.dates?.endDate,
-                        null,
-                        "[]"
-                      )
-                    ) {
+                    const crimeDate = new Date(crimeObj.date);
+                    const startDate = filters?.dates?.startDate;
+                    const endDate = filters?.dates?.endDate;
+
+                    const isInRange =
+                      (!startDate || crimeDate >= startDate) &&
+                      (!endDate || crimeDate <= endDate);
+
+                    if (isInRange) {
                       crimes += 1;
                     }
                   });
@@ -183,16 +182,17 @@ function Plots({ data, weights, minmax, articles, filters }: Props) {
               yearObj.children.forEach((monthObj) => {
                 if (monthObj.children) {
                   monthObj.children.forEach((crimeObj) => {
-                    const crimeDate = dayjs(crimeObj.date);
-                    if (
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      (crimeDate as any).isBetween(
-                        filters?.dates?.startDate,
-                        filters?.dates?.endDate,
-                        null,
-                        "[]"
-                      )
-                    ) {
+                    if (!crimeObj.date) return;
+
+                    const crimeDate = new Date(crimeObj.date);
+                    const startDate = filters?.dates?.startDate;
+                    const endDate = filters?.dates?.endDate;
+
+                    const isInRange =
+                      (!startDate || crimeDate >= startDate) &&
+                      (!endDate || crimeDate <= endDate);
+
+                    if (isInRange) {
                       crimes += 1;
                     }
                   });

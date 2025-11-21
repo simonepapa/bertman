@@ -1,5 +1,4 @@
 import { TreeViewBaseItem } from "@mui/x-tree-view/models";
-import { Dayjs } from "dayjs";
 
 type Crime = {
   crime: string;
@@ -91,6 +90,6 @@ type Filters = {
     [key: string]: number;
   };
   dates: {
-    [key: string]: Dayjs | null;
+    [key: string]: Date | null;
   };
 };
