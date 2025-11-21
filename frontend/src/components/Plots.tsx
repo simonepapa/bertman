@@ -35,6 +35,23 @@ type Props = {
   endDate: Date | null;
 };
 
+// Crime-related properties to check
+const crimeProperties = [
+  "aggressione",
+  "associazione_di_tipo_mafioso",
+  "contrabbando",
+  "estorsione",
+  "furto",
+  "omicidio",
+  "omicidio_colposo",
+  "omicidio_stradale",
+  "rapina",
+  "spaccio",
+  "tentato_omicidio",
+  "truffa",
+  "violenza_sessuale"
+];
+
 function Plots({
   data,
   weights,
@@ -117,7 +134,6 @@ function Plots({
     })
   ];
 
-  // Index articles by their ID to optimize the search on treeArticles
   const articlesMap = useMemo(() => {
     if (!treeArticles) return new Map<string, Article>();
     return new Map(
@@ -130,23 +146,6 @@ function Plots({
       const crimeCountByYear: { [key: string]: number } = {};
       const articleCountByYear: { [key: string]: number } = {};
       const final: { [key: string]: number | string }[] = [];
-
-      // Crime-related properties to check
-      const crimeProperties = [
-        "aggressione",
-        "associazione_di_tipo_mafioso",
-        "contrabbando",
-        "estorsione",
-        "furto",
-        "omicidio",
-        "omicidio_colposo",
-        "omicidio_stradale",
-        "rapina",
-        "spaccio",
-        "tentato_omicidio",
-        "truffa",
-        "violenza_sessuale"
-      ];
 
       const filteredArticles = articles.filter((obj: CustomTreeItem) => {
         const quartiere_index = getQuartiereIndex(obj.label);
@@ -260,7 +259,19 @@ function Plots({
                       (!endDate || crimeDate <= endDate);
 
                     if (isInRange) {
-                      crimes += 1;
+                      // Find the full article object from the map (O(1) lookup)
+                      const fullArticle = articlesMap.get(crimeObj.id);
+
+                      // Check if article has any crime-related property set to 1
+                      if (fullArticle) {
+                        const hasCrime = crimeProperties.some(
+                          (prop) => fullArticle[prop as keyof Article] === 1
+                        );
+
+                        if (hasCrime) {
+                          crimes += 1;
+                        }
+                      }
                     }
                   });
                 }
@@ -291,6 +302,7 @@ function Plots({
     }
   }, [
     articles,
+    articlesMap,
     filters.quartieri,
     filters?.dates?.startDate,
     filters?.dates?.endDate,
@@ -364,14 +376,14 @@ function Plots({
   return (
     <div className="xl:pl-4">
       {weights &&
-        Object.keys(weights).some((weight: string) => weights[weight]) && (
+        Object.keys(weights).some((weight: string) => weights![weight]) && (
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <p className="text-base font-bold">Weights and scaling:</p>
             {minmax && <Badge variant="default">MINMAX SCALED</Badge>}
-            {weights.num_of_articles && (
+            {weights?.num_of_articles && (
               <Badge variant="default">NO. OF ARTICLES</Badge>
             )}
-            {weights.num_of_people && (
+            {weights?.num_of_people && (
               <Badge variant="default">NO. OF PEOPLE</Badge>
             )}
           </div>
