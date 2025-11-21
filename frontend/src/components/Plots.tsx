@@ -182,15 +182,16 @@ function Plots({
                       // Find the full article object from the map
                       const fullArticle = articlesMap.get(crimeObj.id);
 
-                      // Check if article has any crime-related property set to 1
+                      /// Check and count how many crimes = 1
                       if (fullArticle) {
-                        const hasCrime = crimeProperties.some(
-                          (prop) => fullArticle[prop as keyof Article] === 1
-                        );
+                        const crimeSum = crimeProperties.reduce((sum, prop) => {
+                          return (
+                            sum +
+                            (fullArticle[prop as keyof Article] === 1 ? 1 : 0)
+                          );
+                        }, 0);
 
-                        if (hasCrime) {
-                          crimes += 1;
-                        }
+                        crimes += crimeSum;
                       }
                     }
                   });
@@ -263,15 +264,16 @@ function Plots({
                       // Find the full article object from the map (O(1) lookup)
                       const fullArticle = articlesMap.get(crimeObj.id);
 
-                      // Check if article has any crime-related property set to 1
+                      // Check and count how many crimes = 1
                       if (fullArticle) {
-                        const hasCrime = crimeProperties.some(
-                          (prop) => fullArticle[prop as keyof Article] === 1
-                        );
+                        const crimeSum = crimeProperties.reduce((sum, prop) => {
+                          return (
+                            sum +
+                            (fullArticle[prop as keyof Article] === 1 ? 1 : 0)
+                          );
+                        }, 0);
 
-                        if (hasCrime) {
-                          crimes += 1;
-                        }
+                        crimes += crimeSum;
                       }
                     }
                   });

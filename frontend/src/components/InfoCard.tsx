@@ -24,6 +24,8 @@ function InfoCard({
     0
   );
 
+  console.log(crimes);
+
   return (
     <div className="info-card">
       {weights &&
