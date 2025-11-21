@@ -78,6 +78,7 @@ function Plots({
       }[]
     | null
   >(null);
+  const [hoveredLine, setHoveredLine] = useState<string | null>(null);
 
   const quartieri = useMemo(
     () => [
@@ -505,20 +506,35 @@ function Plots({
                       <XAxis dataKey="year" />
                       <YAxis />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Legend />
+                      <Legend
+                        onMouseEnter={(e) =>
+                          setHoveredLine(e.dataKey as string)
+                        }
+                        onMouseLeave={() => setHoveredLine(null)}
+                      />
                       <Line
                         type="monotone"
                         dataKey="crimes"
                         stroke="var(--primary)"
-                        strokeWidth={3}
+                        strokeWidth={hoveredLine === "crimes" ? 6 : 4}
+                        strokeOpacity={
+                          hoveredLine && hoveredLine !== "crimes" ? 0.2 : 1
+                        }
                         dot={{ fill: "var(--primary)", r: 4 }}
+                        onMouseEnter={() => setHoveredLine("crimes")}
+                        onMouseLeave={() => setHoveredLine(null)}
                       />
                       <Line
                         type="monotone"
                         dataKey="articles"
                         stroke="var(--chart-2)"
-                        strokeWidth={3}
+                        strokeWidth={hoveredLine === "articles" ? 6 : 4}
+                        strokeOpacity={
+                          hoveredLine && hoveredLine !== "articles" ? 0.2 : 1
+                        }
                         dot={{ fill: "var(--chart-2)", r: 4 }}
+                        onMouseEnter={() => setHoveredLine("articles")}
+                        onMouseLeave={() => setHoveredLine(null)}
                       />
                     </LineChart>
                   </ChartContainer>
@@ -550,15 +566,25 @@ function Plots({
                       <XAxis dataKey="year" />
                       <YAxis />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Legend />
+                      <Legend
+                        onMouseEnter={(e) =>
+                          setHoveredLine(e.dataKey as string)
+                        }
+                        onMouseLeave={() => setHoveredLine(null)}
+                      />
                       {Object.keys(keyToLabels).map((key, index) => (
                         <Line
                           key={key}
                           type="monotone"
                           dataKey={key}
                           stroke={colors[index % colors.length]}
-                          strokeWidth={2}
+                          strokeWidth={hoveredLine === key ? 5 : 3}
+                          strokeOpacity={
+                            hoveredLine && hoveredLine !== key ? 0.2 : 1
+                          }
                           dot={false}
+                          onMouseEnter={() => setHoveredLine(key)}
+                          onMouseLeave={() => setHoveredLine(null)}
                         />
                       ))}
                     </LineChart>
