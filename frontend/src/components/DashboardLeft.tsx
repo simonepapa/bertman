@@ -123,7 +123,7 @@ function DashboardLeft({
   }, [endDate, fetchData, filters, setFilters, startDate]);
 
   return (
-    <div className="dashboard-left bg-card flex flex-col gap-4 xl:pr-4">
+    <div className="dashboard-left bg-background flex flex-col gap-4 xl:pr-4">
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-4">
           <h2 className="text-3xl font-bold">Data filters</h2>

@@ -22,7 +22,7 @@ function Navbar() {
   ];
 
   return (
-    <nav className="bg-card border-b">
+    <nav className="bg-background border-b">
       <div className="flex h-16 items-center justify-between px-4">
         <Link to="/" className="hover:text-primary text-lg font-bold">
           BERTMAN
