@@ -28,7 +28,8 @@ import {
   Loader2,
   Sparkles,
   AlertCircle,
-  RotateCcw
+  RotateCcw,
+  Check
 } from "lucide-react";
 import { enqueueSnackbar } from "notistack";
 import { ChangeEvent, SyntheticEvent, useCallback, useState } from "react";
@@ -43,6 +44,10 @@ function LabelArticles() {
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [reviewedArticles, setReviewedArticles] = useState<Set<number>>(
+    new Set()
+  );
+  const [filter, setFilter] = useState<"all" | "to_review" | "reviewed">("all");
 
   const handleChangeQuartiere = (value: string) => {
     if (!isLoading) {
@@ -134,6 +139,7 @@ function LabelArticles() {
   };
   const handleNextArticle = () => {
     if (labeledArticles && currentArticle < labeledArticles.length - 1) {
+      setReviewedArticles((prev) => new Set(prev).add(currentArticle));
       setCurrentArticle(currentArticle + 1);
     }
   };
@@ -216,7 +222,24 @@ function LabelArticles() {
     setError("");
     setIsLoading(false);
     setIsUploading(false);
+    setReviewedArticles(new Set());
+    setFilter("all");
   }, []);
+
+  const handleArticleSelect = (index: number) => {
+    setCurrentArticle(index);
+  };
+
+  const filteredArticles = labeledArticles
+    ?.map((article, index) => ({ ...article, originalIndex: index }))
+    .filter((article) => {
+      if (filter === "all") return true;
+      if (filter === "to_review")
+        return !reviewedArticles.has(article.originalIndex);
+      if (filter === "reviewed")
+        return reviewedArticles.has(article.originalIndex);
+      return true;
+    });
 
   const categories = [
     "omicidio",
@@ -387,6 +410,12 @@ function LabelArticles() {
     "title": "Article Title",
     "date": "YYYY-MM-DD HH:mm:ss",
     "content": "Article content here..."
+},
+{
+    "link": "https://example.com/article2",
+    "title": "Article Title 2",
+    "date": "YYYY-MM-DD HH:mm:ss",
+    "content": "Article2 content here..."
 }`}</code>
               </pre>
             </CardContent>
@@ -396,110 +425,162 @@ function LabelArticles() {
 
       <div className="container mx-auto px-4 pb-8">
         {labeledArticles && (
-          <>
-            <div className="mb-8 flex justify-between">
-              <Button
-                disabled={currentArticle === 0 || isUploading}
-                variant="outline"
-                onClick={handlePrevArticle}
-                className={currentArticle === 0 ? "invisible" : ""}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Previous article
-              </Button>
+          <div className="grid h-[800px] grid-cols-12 gap-6">
+            <div className="col-span-4 flex flex-col gap-4">
+              <div className="flex flex-wrap gap-2">
+                <Badge
+                  variant={filter === "all" ? "default" : "outline"}
+                  className="cursor-pointer px-4 py-2 text-sm transition-colors"
+                  onClick={() => setFilter("all")}>
+                  All
+                </Badge>
+                <Badge
+                  variant={filter === "to_review" ? "default" : "outline"}
+                  className="cursor-pointer px-4 py-2 text-sm transition-colors"
+                  onClick={() => setFilter("to_review")}>
+                  To Review
+                </Badge>
+                <Badge
+                  variant={filter === "reviewed" ? "default" : "outline"}
+                  className="cursor-pointer px-4 py-2 text-sm transition-colors"
+                  onClick={() => setFilter("reviewed")}>
+                  Reviewed
+                </Badge>
+              </div>
 
-              {currentArticle < labeledArticles.length - 1 ? (
-                <Button
-                  disabled={
-                    currentArticle === labeledArticles.length - 1 || isUploading
-                  }
-                  variant="outline"
-                  onClick={handleNextArticle}>
-                  Next article
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              ) : (
-                <Button
-                  disabled={
-                    currentArticle !== labeledArticles.length - 1 || isUploading
-                  }
-                  variant="default"
-                  onClick={handleUploadToDatabase}>
-                  Upload to database
-                  <Database className="ml-2 h-4 w-4" />
-                </Button>
-              )}
+              <Card className="flex flex-1 flex-col overflow-hidden">
+                <CardHeader className="border-b px-4 py-3">
+                  <CardTitle className="flex items-center justify-between text-sm font-medium">
+                    <span>Articles List</span>
+                    <Badge variant="secondary">
+                      {filteredArticles?.length} / {labeledArticles.length}
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <div className="flex-1 space-y-2 overflow-y-auto p-2">
+                  {filteredArticles?.map((article) => (
+                    <div
+                      key={article.originalIndex}
+                      onClick={() => handleArticleSelect(article.originalIndex)}
+                      className={`hover:bg-accent cursor-pointer rounded-lg border p-3 transition-colors ${
+                        currentArticle === article.originalIndex
+                          ? "bg-accent border-primary"
+                          : "bg-card"
+                      }`}>
+                      <div className="mb-1 flex items-start justify-between">
+                        <h4 className="line-clamp-1 text-sm font-medium">
+                          {article.title}
+                        </h4>
+                        {reviewedArticles.has(article.originalIndex) && (
+                          <Check className="h-4 w-4 flex-shrink-0 text-green-500" />
+                        )}
+                      </div>
+                      <p className="text-muted-foreground text-xs">
+                        {article.date}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </Card>
             </div>
 
-            <Card>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-xl font-bold">
+            <div className="col-span-8 flex h-full flex-col gap-4 overflow-hidden">
+              <div className="flex shrink-0 items-center justify-end gap-2">
+                <Button
+                  disabled={currentArticle === 0 || isUploading}
+                  variant="outline"
+                  onClick={handlePrevArticle}>
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Previous
+                </Button>
+
+                {currentArticle < labeledArticles.length - 1 ? (
+                  <Button
+                    disabled={isUploading}
+                    variant="outline"
+                    onClick={handleNextArticle}>
+                    Confirm and go next
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    disabled={
+                      isUploading ||
+                      reviewedArticles.size < labeledArticles.length - 1
+                    }
+                    variant="default"
+                    onClick={() => {
+                      setReviewedArticles((prev) =>
+                        new Set(prev).add(currentArticle)
+                      );
+                      handleUploadToDatabase();
+                    }}>
+                    Confirm and Upload
+                    <Database className="ml-2 h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+
+              <Card className="flex h-full flex-col overflow-hidden p-0 xl:flex-row xl:gap-0">
+                <div className="flex w-[75%] flex-col border-r">
+                  <CardHeader className="shrink-0 border-b py-4">
+                    <CardTitle className="text-lg font-bold">
                       {labeledArticles[currentArticle].title}
                     </CardTitle>
-                    <CardDescription className="mt-2">
+                    <CardDescription>
                       {labeledArticles[currentArticle].date}
                     </CardDescription>
-                  </div>
-                  <Badge variant="outline">
-                    Article {currentArticle + 1} of {labeledArticles.length}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="prose dark:prose-invert mb-6 max-w-none">
-                  {labeledArticles[currentArticle].content
-                    .split("\n")
-                    .map((str: string, index: number) => (
-                      <p key={index} className="mb-2">
-                        {str}
-                      </p>
-                    ))}
+                  </CardHeader>
+                  <CardContent className="flex-1 overflow-y-auto p-4">
+                    <div className="prose dark:prose-invert max-w-none text-sm">
+                      {labeledArticles[currentArticle].content
+                        .split("\n")
+                        .map((str: string, index: number) => (
+                          <p key={index} className="mb-2">
+                            {str}
+                          </p>
+                        ))}
+                    </div>
+                  </CardContent>
                 </div>
 
-                <Separator className="my-6" />
-
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold">Categories</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Toggle categories to correct the labels. The percentage
-                      indicates the model's confidence.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    {categories.map((cat) => (
-                      <div
-                        key={cat}
-                        className="flex items-center space-x-4 rounded-lg border p-4">
-                        <Switch
-                          checked={
-                            labeledArticles[currentArticle][cat]?.value === 1
-                          }
-                          onCheckedChange={(checked) =>
-                            handleChangeLabel(checked, cat)
-                          }
-                        />
-                        <div className="flex-1 space-y-1">
-                          <Label className="cursor-pointer text-sm leading-none font-medium">
-                            {getCrimeName(cat)}
-                          </Label>
-                          <p className="text-muted-foreground text-xs">
+                <div className="flex w-[25%] flex-col">
+                  <CardContent className="flex-1 overflow-y-auto p-3">
+                    <div className="flex flex-col gap-2">
+                      {categories.map((cat) => (
+                        <div
+                          key={cat}
+                          className="flex flex-col gap-1 border-b pb-1 last:border-0">
+                          <div className="flex items-center justify-between">
+                            <Label className="max-w-[75%] cursor-pointer text-sm leading-tight font-medium break-words">
+                              {getCrimeName(cat)}
+                            </Label>
+                            <Switch
+                              checked={
+                                labeledArticles[currentArticle][cat]?.value ===
+                                1
+                              }
+                              onCheckedChange={(checked) =>
+                                handleChangeLabel(checked, cat)
+                              }
+                              className="origin-right scale-75"
+                            />
+                          </div>
+                          <p className="text-muted-foreground text-[10px]">
                             {(
                               (labeledArticles[currentArticle][cat]?.prob ||
                                 0) * 100
-                            ).toFixed(2)}
-                            % probability
+                            ).toFixed(1)}
+                            %
                           </p>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  </CardContent>
                 </div>
-              </CardContent>
-            </Card>
-          </>
+              </Card>
+            </div>
+          </div>
         )}
       </div>
     </>
