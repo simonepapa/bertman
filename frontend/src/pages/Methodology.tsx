@@ -1,5 +1,3 @@
-import { List, ListItem, ListItemText } from "@mui/material";
-
 function Methodology() {
   return (
     <div className="mt-8 mb-12 flex flex-col gap-2 px-4 xl:mx-12 xl:max-w-[1200px] xl:px-0">
@@ -15,47 +13,21 @@ function Methodology() {
         psychological) inflicted on the victims as well as the potential
         long-term consequences of each crime:
       </p>
-      <List dense={true}>
-        <ListItem>
-          <ListItemText primary="1.0 Murder" />
-        </ListItem>
-        <ListItem>
-          <ListItemText primary="0.7 Manslaughter" />
-        </ListItem>
-        <ListItem>
-          <ListItemText primary="0.8 Road Homicide" />
-        </ListItem>
-        <ListItem>
-          <ListItemText primary="0.9 Attempted Murder" />
-        </ListItem>
-        <ListItem>
-          <ListItemText primary="0.2 Theft" />
-        </ListItem>
-        <ListItem>
-          <ListItemText primary="0.7 Robbery" />
-        </ListItem>
-        <ListItem>
-          <ListItemText primary="0.8 Sexual violence" />
-        </ListItem>
-        <ListItem>
-          <ListItemText primary="0.6 Assault" />
-        </ListItem>
-        <ListItem>
-          <ListItemText primary="0.5 Drug Trafficking" />
-        </ListItem>
-        <ListItem>
-          <ListItemText primary="0.3 Fraud" />
-        </ListItem>
-        <ListItem>
-          <ListItemText primary="0.6 Extortion" />
-        </ListItem>
-        <ListItem>
-          <ListItemText primary="0.4 Smuggling" />
-        </ListItem>
-        <ListItem>
-          <ListItemText primary="1.0 Mafia-type association" />
-        </ListItem>
-      </List>
+      <ul className="ml-6 list-disc list-none space-y-1 text-sm">
+        <li>1.0 Murder</li>
+        <li>0.7 Manslaughter</li>
+        <li>0.8 Road Homicide</li>
+        <li>0.9 Attempted Murder</li>
+        <li>0.2 Theft</li>
+        <li>0.7 Robbery</li>
+        <li>0.8 Sexual violence</li>
+        <li>0.6 Assault</li>
+        <li>0.5 Drug Trafficking</li>
+        <li>0.3 Fraud</li>
+        <li>0.6 Extortion</li>
+        <li>0.4 Smuggling</li>
+        <li>1.0 Mafia-type association</li>
+      </ul>
       <p>
         Since the number of articles highly varies between neighborhoods and the
         since the neighborhoods have different population, the CRI can
