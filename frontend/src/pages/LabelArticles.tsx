@@ -19,6 +19,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import {
   ArrowLeft,
@@ -29,7 +30,8 @@ import {
   Sparkles,
   AlertCircle,
   RotateCcw,
-  Check
+  Check,
+  Menu
 } from "lucide-react";
 import { enqueueSnackbar } from "notistack";
 import { ChangeEvent, SyntheticEvent, useCallback, useState } from "react";
@@ -396,7 +398,7 @@ function LabelArticles() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className={articles ? "hidden lg:block" : ""}>
             <CardHeader>
               <CardTitle>Expected JSON Format</CardTitle>
               <CardDescription>
@@ -425,162 +427,252 @@ function LabelArticles() {
 
       <div className="container mx-auto px-4 pb-8">
         {labeledArticles && (
-          <div className="grid h-[800px] grid-cols-12 gap-6">
-            <div className="col-span-4 flex flex-col gap-4">
-              <div className="flex flex-wrap gap-2">
-                <Badge
-                  variant={filter === "all" ? "default" : "outline"}
-                  className="cursor-pointer px-4 py-2 text-sm transition-colors"
-                  onClick={() => setFilter("all")}>
-                  All
-                </Badge>
-                <Badge
-                  variant={filter === "to_review" ? "default" : "outline"}
-                  className="cursor-pointer px-4 py-2 text-sm transition-colors"
-                  onClick={() => setFilter("to_review")}>
-                  To Review
-                </Badge>
-                <Badge
-                  variant={filter === "reviewed" ? "default" : "outline"}
-                  className="cursor-pointer px-4 py-2 text-sm transition-colors"
-                  onClick={() => setFilter("reviewed")}>
-                  Reviewed
-                </Badge>
-              </div>
-
-              <Card className="flex flex-1 flex-col overflow-hidden">
-                <CardHeader className="border-b px-4 py-3">
-                  <CardTitle className="flex items-center justify-between text-sm font-medium">
-                    <span>Articles List</span>
-                    <Badge variant="secondary">
-                      {filteredArticles?.length} / {labeledArticles.length}
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <div className="flex-1 space-y-2 overflow-y-auto p-2">
-                  {filteredArticles?.map((article) => (
-                    <div
-                      key={article.originalIndex}
-                      onClick={() => handleArticleSelect(article.originalIndex)}
-                      className={`hover:bg-accent cursor-pointer rounded-lg border p-3 transition-colors ${
-                        currentArticle === article.originalIndex
-                          ? "bg-accent border-primary"
-                          : "bg-card"
-                      }`}>
-                      <div className="mb-1 flex items-start justify-between">
-                        <h4 className="line-clamp-1 text-sm font-medium">
-                          {article.title}
-                        </h4>
-                        {reviewedArticles.has(article.originalIndex) && (
-                          <Check className="h-4 w-4 flex-shrink-0 text-green-500" />
-                        )}
+          <>
+            {/* Mobile Article List Trigger */}
+            <div className="fixed bottom-6 left-6 z-50 lg:hidden">
+              <Sheet>
+                <SheetTrigger asChild={true}>
+                  <Button
+                    size="icon"
+                    className="h-12 w-12 rounded-full shadow-lg">
+                    <Menu className="h-6 w-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent
+                  side="left"
+                  className="w-[300px] p-0 sm:w-[400px]">
+                  <div className="h-full p-4 pt-10">
+                    <div className="flex h-full flex-col gap-4">
+                      <div className="flex flex-wrap gap-2">
+                        <Badge
+                          variant={filter === "all" ? "default" : "outline"}
+                          className="cursor-pointer px-4 py-2 text-sm transition-colors"
+                          onClick={() => setFilter("all")}>
+                          All
+                        </Badge>
+                        <Badge
+                          variant={
+                            filter === "to_review" ? "default" : "outline"
+                          }
+                          className="cursor-pointer px-4 py-2 text-sm transition-colors"
+                          onClick={() => setFilter("to_review")}>
+                          To Review
+                        </Badge>
+                        <Badge
+                          variant={
+                            filter === "reviewed" ? "default" : "outline"
+                          }
+                          className="cursor-pointer px-4 py-2 text-sm transition-colors"
+                          onClick={() => setFilter("reviewed")}>
+                          Reviewed
+                        </Badge>
                       </div>
-                      <p className="text-muted-foreground text-xs">
-                        {article.date}
-                      </p>
+
+                      <Card className="flex flex-1 flex-col overflow-hidden">
+                        <CardHeader className="border-b px-4 py-3">
+                          <CardTitle className="flex items-center justify-between text-sm font-medium">
+                            <span>Articles List</span>
+                            <Badge variant="secondary">
+                              {filteredArticles?.length} /{" "}
+                              {labeledArticles.length}
+                            </Badge>
+                          </CardTitle>
+                        </CardHeader>
+                        <div className="flex-1 space-y-2 overflow-y-auto p-2">
+                          {filteredArticles?.map((article) => (
+                            <div
+                              key={article.originalIndex}
+                              onClick={() =>
+                                handleArticleSelect(article.originalIndex)
+                              }
+                              className={`hover:bg-accent cursor-pointer rounded-lg border p-3 transition-colors ${
+                                currentArticle === article.originalIndex
+                                  ? "bg-accent border-primary"
+                                  : "bg-card"
+                              }`}>
+                              <div className="mb-1 flex items-start justify-between">
+                                <h4 className="line-clamp-1 text-sm font-medium">
+                                  {article.title}
+                                </h4>
+                                {reviewedArticles.has(
+                                  article.originalIndex
+                                ) && (
+                                  <Check className="h-4 w-4 flex-shrink-0 text-green-500" />
+                                )}
+                              </div>
+                              <p className="text-muted-foreground text-xs">
+                                {article.date}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </Card>
                     </div>
-                  ))}
-                </div>
-              </Card>
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
 
-            <div className="col-span-8 flex h-full flex-col gap-4 overflow-hidden">
-              <div className="flex shrink-0 items-center justify-end gap-2">
-                <Button
-                  disabled={currentArticle === 0 || isUploading}
-                  variant="outline"
-                  onClick={handlePrevArticle}>
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Previous
-                </Button>
+            <div className="grid h-[800px] grid-cols-12 gap-6">
+              {/* Desktop Article List */}
+              <div className="col-span-4 hidden flex-col gap-4 lg:flex">
+                <div className="flex flex-wrap gap-2">
+                  <Badge
+                    variant={filter === "all" ? "default" : "outline"}
+                    className="cursor-pointer px-4 py-2 text-sm transition-colors"
+                    onClick={() => setFilter("all")}>
+                    All
+                  </Badge>
+                  <Badge
+                    variant={filter === "to_review" ? "default" : "outline"}
+                    className="cursor-pointer px-4 py-2 text-sm transition-colors"
+                    onClick={() => setFilter("to_review")}>
+                    To Review
+                  </Badge>
+                  <Badge
+                    variant={filter === "reviewed" ? "default" : "outline"}
+                    className="cursor-pointer px-4 py-2 text-sm transition-colors"
+                    onClick={() => setFilter("reviewed")}>
+                    Reviewed
+                  </Badge>
+                </div>
 
-                {currentArticle < labeledArticles.length - 1 ? (
-                  <Button
-                    disabled={isUploading}
-                    variant="outline"
-                    onClick={handleNextArticle}>
-                    Confirm and go next
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                ) : (
-                  <Button
-                    disabled={
-                      isUploading ||
-                      reviewedArticles.size < labeledArticles.length - 1
-                    }
-                    variant="default"
-                    onClick={() => {
-                      setReviewedArticles((prev) =>
-                        new Set(prev).add(currentArticle)
-                      );
-                      handleUploadToDatabase();
-                    }}>
-                    Confirm and Upload
-                    <Database className="ml-2 h-4 w-4" />
-                  </Button>
-                )}
+                <Card className="flex flex-1 flex-col overflow-hidden">
+                  <CardHeader className="border-b px-4 py-3">
+                    <CardTitle className="flex items-center justify-between text-sm font-medium">
+                      <span>Articles List</span>
+                      <Badge variant="secondary">
+                        {filteredArticles?.length} / {labeledArticles.length}
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <div className="flex-1 space-y-2 overflow-y-auto p-2">
+                    {filteredArticles?.map((article) => (
+                      <div
+                        key={article.originalIndex}
+                        onClick={() =>
+                          handleArticleSelect(article.originalIndex)
+                        }
+                        className={`hover:bg-accent cursor-pointer rounded-lg border p-3 transition-colors ${
+                          currentArticle === article.originalIndex
+                            ? "bg-accent border-primary"
+                            : "bg-card"
+                        }`}>
+                        <div className="mb-1 flex items-start justify-between">
+                          <h4 className="line-clamp-1 text-sm font-medium">
+                            {article.title}
+                          </h4>
+                          {reviewedArticles.has(article.originalIndex) && (
+                            <Check className="h-4 w-4 flex-shrink-0 text-green-500" />
+                          )}
+                        </div>
+                        <p className="text-muted-foreground text-xs">
+                          {article.date}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
               </div>
 
-              <Card className="flex h-full flex-col overflow-hidden p-0 xl:flex-row xl:gap-0">
-                <div className="flex w-[75%] flex-col border-r">
-                  <CardHeader className="shrink-0 border-b py-4">
-                    <CardTitle className="text-lg font-bold">
-                      {labeledArticles[currentArticle].title}
-                    </CardTitle>
-                    <CardDescription>
-                      {labeledArticles[currentArticle].date}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-1 overflow-y-auto p-4">
-                    <div className="prose dark:prose-invert max-w-none text-sm">
-                      {labeledArticles[currentArticle].content
-                        .split("\n")
-                        .map((str: string, index: number) => (
-                          <p key={index} className="mb-2">
-                            {str}
-                          </p>
-                        ))}
-                    </div>
-                  </CardContent>
+              <div className="col-span-12 flex h-full flex-col gap-4 overflow-hidden lg:col-span-8">
+                <div className="flex shrink-0 items-center justify-end gap-2">
+                  <Button
+                    disabled={currentArticle === 0 || isUploading}
+                    variant="outline"
+                    onClick={handlePrevArticle}>
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Previous
+                  </Button>
+
+                  {currentArticle < labeledArticles.length - 1 ? (
+                    <Button
+                      disabled={isUploading}
+                      variant="outline"
+                      onClick={handleNextArticle}>
+                      Confirm and go next
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      disabled={
+                        isUploading ||
+                        reviewedArticles.size < labeledArticles.length - 1
+                      }
+                      variant="default"
+                      onClick={() => {
+                        setReviewedArticles((prev) =>
+                          new Set(prev).add(currentArticle)
+                        );
+                        handleUploadToDatabase();
+                      }}>
+                      Confirm and Upload
+                      <Database className="ml-2 h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
 
-                <div className="flex w-[25%] flex-col">
-                  <CardContent className="flex-1 overflow-y-auto p-3">
-                    <div className="flex flex-col gap-2">
-                      {categories.map((cat) => (
-                        <div
-                          key={cat}
-                          className="flex flex-col gap-1 border-b pb-1 last:border-0">
-                          <div className="flex items-center justify-between">
-                            <Label className="max-w-[75%] cursor-pointer text-sm leading-tight font-medium break-words">
-                              {getCrimeName(cat)}
-                            </Label>
-                            <Switch
-                              checked={
-                                labeledArticles[currentArticle][cat]?.value ===
-                                1
-                              }
-                              onCheckedChange={(checked) =>
-                                handleChangeLabel(checked, cat)
-                              }
-                              className="origin-right scale-75"
-                            />
+                <Card className="flex h-full flex-col overflow-hidden p-0 lg:flex-row lg:gap-0">
+                  <div className="flex w-full flex-col border-b lg:w-[75%] lg:border-r lg:border-b-0">
+                    <CardHeader className="shrink-0 border-b py-4">
+                      <CardTitle className="text-lg font-bold">
+                        {labeledArticles[currentArticle].title}
+                      </CardTitle>
+                      <CardDescription>
+                        {labeledArticles[currentArticle].date}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-1 overflow-y-auto p-4">
+                      <div className="prose dark:prose-invert max-w-none text-sm">
+                        {labeledArticles[currentArticle].content
+                          .split("\n")
+                          .map((str: string, index: number) => (
+                            <p key={index} className="mb-2">
+                              {str}
+                            </p>
+                          ))}
+                      </div>
+                    </CardContent>
+                  </div>
+
+                  <div className="flex w-full flex-col lg:w-[25%]">
+                    <CardContent className="flex-1 overflow-y-auto p-3">
+                      <div className="flex flex-col gap-2">
+                        {categories.map((cat) => (
+                          <div
+                            key={cat}
+                            className="flex flex-col gap-1 border-b pb-1 last:border-0">
+                            <div className="flex items-center justify-between">
+                              <Label className="max-w-[75%] cursor-pointer text-sm leading-tight font-medium break-words">
+                                {getCrimeName(cat)}
+                              </Label>
+                              <Switch
+                                checked={
+                                  labeledArticles[currentArticle][cat]
+                                    ?.value === 1
+                                }
+                                onCheckedChange={(checked) =>
+                                  handleChangeLabel(checked, cat)
+                                }
+                                className="origin-right scale-75"
+                              />
+                            </div>
+                            <p className="text-muted-foreground text-[10px]">
+                              {(
+                                (labeledArticles[currentArticle][cat]?.prob ||
+                                  0) * 100
+                              ).toFixed(1)}
+                              %
+                            </p>
                           </div>
-                          <p className="text-muted-foreground text-[10px]">
-                            {(
-                              (labeledArticles[currentArticle][cat]?.prob ||
-                                0) * 100
-                            ).toFixed(1)}
-                            %
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </div>
-              </Card>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </div>
+                </Card>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     </>
