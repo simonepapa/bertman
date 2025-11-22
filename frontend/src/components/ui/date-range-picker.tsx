@@ -79,6 +79,9 @@ export function DateRangePicker({
             onSelect={onChange}
             numberOfMonths={1}
             disabled={disabledMatcher}
+            captionLayout="dropdown"
+            startMonth={new Date(2000, 0)}
+            endMonth={new Date(new Date().getFullYear(), 11)}
           />
         </PopoverContent>
       </Popover>
