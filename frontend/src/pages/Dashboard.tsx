@@ -296,7 +296,11 @@ function Dashboard() {
               />
             </MapContainer>
           )}
-          <ChoroplethLegend palette={palette} legendValues={legendValues} />
+          <ChoroplethLegend
+            key={`legend-${legendValues.join("-")}`}
+            palette={palette}
+            legendValues={legendValues}
+          />
         </div>
 
         {data && (
