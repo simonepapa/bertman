@@ -19,8 +19,9 @@ import {
 } from "@/components/ui/select";
 import { format, startOfYear, endOfYear } from "date-fns";
 import { Loader2, ArrowUp, ChevronsUpDown } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DateRange } from "react-day-picker";
+import { useSearchParams } from "react-router-dom";
 
 const neighborhoods = [
   { value: "bari-vecchia_san-nicola", label: "Bari Vecchia - San Nicola" },
@@ -62,19 +63,26 @@ const crimeCategories = [
 ];
 
 function ReadArticles() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [articles, setArticles] = useState<Article[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Filter states
+  // Filter states initialized from URL
   const [selectedQuartiere, setSelectedQuartiere] = useState<
     string | undefined
-  >(undefined);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: startOfYear(new Date()),
-    to: endOfYear(new Date())
+  >(searchParams.get("quartiere") || undefined);
+
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+    const start = searchParams.get("start");
+    const end = searchParams.get("end");
+    return {
+      from: start ? new Date(start) : startOfYear(new Date()),
+      to: end ? new Date(end) : endOfYear(new Date())
+    };
   });
+
   const [hasSearched, setHasSearched] = useState(false);
 
   const handleSearch = async () => {
@@ -90,8 +98,21 @@ function ReadArticles() {
       }
 
       if (dateRange?.from && dateRange?.to) {
-        params.append("startDate", format(dateRange.from, "yyyy-MM-dd"));
-        params.append("endDate", format(dateRange.to, "yyyy-MM-dd"));
+        const startStr = format(dateRange.from, "yyyy-MM-dd");
+        const endStr = format(dateRange.to, "yyyy-MM-dd");
+        params.append("startDate", startStr);
+        params.append("endDate", endStr);
+
+        // Update URL params
+        const newSearchParams = new URLSearchParams(searchParams);
+        if (selectedQuartiere) {
+          newSearchParams.set("quartiere", selectedQuartiere);
+        } else {
+          newSearchParams.delete("quartiere");
+        }
+        newSearchParams.set("start", startStr);
+        newSearchParams.set("end", endStr);
+        setSearchParams(newSearchParams);
       }
 
       const url = `http://127.0.0.1:3000/api/get-articles?${params.toString()}`;
@@ -111,6 +132,14 @@ function ReadArticles() {
 
     setIsLoading(false);
   };
+
+  // Trigger search on mount if params exist
+  useEffect(() => {
+    if (searchParams.has("start") || searchParams.has("quartiere")) {
+      handleSearch();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const downloadJSON = () => {
     if (!articles || articles.length === 0) return;
@@ -141,6 +170,17 @@ function ReadArticles() {
       top: 0,
       behavior: "smooth"
     });
+  };
+
+  const handleReset = () => {
+    setSelectedQuartiere(undefined);
+    setDateRange({
+      from: startOfYear(new Date()),
+      to: endOfYear(new Date())
+    });
+    setHasSearched(false);
+    setArticles([]);
+    setSearchParams(new URLSearchParams());
   };
 
   return (
@@ -189,19 +229,24 @@ function ReadArticles() {
                 <DateRangePicker value={dateRange} onChange={setDateRange} />
               </div>
 
-              <Button
-                onClick={handleSearch}
-                className="w-full"
-                disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  "Search Articles"
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleSearch}
+                  className="flex-1"
+                  disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    "Search Articles"
+                  )}
+                </Button>
+                <Button variant="outline" onClick={handleReset}>
+                  Reset
+                </Button>
+              </div>
 
               {articles && articles.length > 0 && (
                 <Button
