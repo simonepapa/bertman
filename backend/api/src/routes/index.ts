@@ -7,6 +7,26 @@ const router = Router();
 const dbPath = "../classifier/database.db";
 const quartieriJsonPath = "../classifier/data/quartieri.json";
 
+// Cache quartieri.json in memory as it is static and not expected to change
+let quartieriGeometryCache: any = null;
+
+function loadQuartieriGeometry() {
+  if (!quartieriGeometryCache) {
+    try {
+      const data = fs.readFileSync(quartieriJsonPath, "utf8");
+      quartieriGeometryCache = JSON.parse(data);
+      console.log("✅ Loaded quartieri.json into cache");
+    } catch (err) {
+      console.error("❌ Failed to load quartieri.json:", err);
+      throw err;
+    }
+  }
+  return quartieriGeometryCache;
+}
+
+// Load quartieri data at server startup
+loadQuartieriGeometry();
+
 // Helper to get DB connection
 const getDb = () => {
   return new sqlite3.Database(dbPath, (err) => {
@@ -151,19 +171,13 @@ router.get("/get-data", (req: Request, res: Response) => {
 
     const articles_df = rows;
 
-    fs.readFile(quartieriJsonPath, "utf8", (err, data) => {
-      if (err) {
-        res.status(500).json({ error: "Could not read quartieri.json" });
-        db.close();
-        return;
-      }
+    try {
+      const geometry_json = loadQuartieriGeometry();
 
       let geojson_data = {
         type: "FeatureCollection",
         features: [] as any[]
       };
-
-      const geometry_json = JSON.parse(data);
 
       quartieriList.forEach((quartiere) => {
         const matching_quartiere = geometry_json.find(
@@ -201,7 +215,11 @@ router.get("/get-data", (req: Request, res: Response) => {
 
       res.json(final_geojson);
       db.close();
-    });
+    } catch (err) {
+      res.status(500).json({ error: "Could not read quartieri.json" });
+      db.close();
+      return;
+    }
   });
 });
 

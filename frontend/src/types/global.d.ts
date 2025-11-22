@@ -1,12 +1,10 @@
-import { TreeViewBaseItem } from "@mui/x-tree-view/models";
-
-type Crime = {
+export type Crime = {
   crime: string;
   index: number | string;
   frequency: number;
 };
 
-type InfoQuartiere = {
+export type InfoQuartiere = {
   name: string;
   crime_index: number | null;
   total_crimes: number | null;
@@ -16,7 +14,7 @@ type InfoQuartiere = {
   minmax: boolean;
 };
 
-type Article = {
+export type Article = {
   id: number;
   link: string;
   title: string;
@@ -52,7 +50,7 @@ type Article = {
   [key: string]: number;
 };
 
-type LabeledArticle = {
+export type LabeledArticle = {
   link: string;
   title: string;
   content: string;
@@ -63,20 +61,7 @@ type LabeledArticle = {
   };
 };
 
-interface CustomTreeItem extends TreeViewBaseItem {
-  url?: string;
-  date?: string;
-  children?: {
-    id: string;
-    label: string;
-    url?: string;
-    date?: string;
-    isLastChild?: boolean;
-    children?: CustomTreeItem[];
-  }[];
-}
-
-type Filters = {
+export type Filters = {
   crimes: {
     [key: string]: number;
   };
