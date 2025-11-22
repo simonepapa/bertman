@@ -1,6 +1,6 @@
 const sqlite3 = require("sqlite3");
 
-const dbPath = "../classifier/database.db";
+const dbPath = "../database.db";
 
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {

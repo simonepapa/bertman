@@ -4,7 +4,7 @@ import fs from "fs";
 import { analyze_quartieri, calculate_statistics } from "../utils";
 
 const router = Router();
-const dbPath = "../classifier/database.db";
+const dbPath = "../database.db";
 const quartieriJsonPath = "../classifier/data/quartieri.json";
 
 // Cache quartieri.json in memory as it is static and not expected to change
