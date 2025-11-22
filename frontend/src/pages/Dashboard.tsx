@@ -256,7 +256,7 @@ function Dashboard() {
           handleResetDate={handleResetDate}
         />
       </div>
-      <div className="relative w-full px-4 xl:min-h-screen xl:w-[80%] xl:px-0">
+      <div className="xl:border-border relative w-full px-4 xl:min-h-screen xl:w-[80%] xl:border-l xl:px-0">
         <div className="relative h-[800px] w-full bg-[#262626] xl:h-screen">
           <ArrowUp
             className="bg-primary text-primary-foreground hover:bg-primary/90 !sticky fixed !top-8 right-8 bottom-8 !left-2 !z-[10500] z-[10000] !h-12 h-12 !w-12 w-12 cursor-pointer rounded-full p-3 !text-white shadow-lg transition-all hover:shadow-xl xl:!hidden"

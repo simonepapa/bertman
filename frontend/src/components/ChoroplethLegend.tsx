@@ -7,7 +7,7 @@ type Props = {
 
 function ChoroplethLegend({ palette, legendValues }: Props) {
   return (
-    <div className="legend-card grid grid-cols-3 gap-2 xl:grid-cols-1">
+    <div className="legend-card bg-foreground text-background grid grid-cols-3 gap-2 xl:grid-cols-1">
       {[...legendValues].reverse().map((value: number, index: number) => (
         <div className="flex items-center gap-2" key={value}>
           <div
