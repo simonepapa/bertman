@@ -17,28 +17,109 @@ const getDb = () => {
 };
 
 router.get("/get-data", (req: Request, res: Response) => {
-  const startDate = (req.query.startDate as string) || "";
-  const endDate = (req.query.endDate as string) || "";
+  let startDate = (req.query.startDate as string) || "";
+  let endDate = (req.query.endDate as string) || "";
   let crimes = (req.query.crimes as string) || "";
   let quartieri = (req.query.quartieri as string) || "";
   const weightsForArticles = req.query.weightsForArticles !== "false";
   const weightsForPeople = req.query.weightsForPeople === "true";
   const minmaxScaler = req.query.minmaxScaler !== "false";
 
+  // Validate and normalize dates
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (startDate) {
+    // Extract just the date part if format is "YYYY-MM-DD HH:mm:ss"
+    const parts = startDate.split(" ");
+    startDate = parts[0] || startDate;
+    if (!dateRegex.test(startDate)) {
+      res
+        .status(400)
+        .json({ error: "Invalid startDate format. Expected YYYY-MM-DD" });
+      return;
+    }
+  }
+  if (endDate) {
+    // Extract just the date part if format is "YYYY-MM-DD HH:mm:ss"
+    const parts = endDate.split(" ");
+    endDate = parts[0] || endDate;
+    if (!dateRegex.test(endDate)) {
+      res
+        .status(400)
+        .json({ error: "Invalid endDate format. Expected YYYY-MM-DD" });
+      return;
+    }
+  }
+
+  // Define valid crimes and quartieri
+  const validCrimes = [
+    "omicidio",
+    "omicidio_colposo",
+    "omicidio_stradale",
+    "tentato_omicidio",
+    "furto",
+    "rapina",
+    "violenza_sessuale",
+    "aggressione",
+    "spaccio",
+    "truffa",
+    "estorsione",
+    "contrabbando",
+    "associazione_di_tipo_mafioso"
+  ];
+  const validQuartieri = [
+    "bari-vecchia_san-nicola",
+    "carbonara",
+    "carrassi",
+    "ceglie-del-campo",
+    "japigia",
+    "liberta",
+    "loseto",
+    "madonnella",
+    "murat",
+    "palese-macchie",
+    "picone",
+    "san-paolo",
+    "san-pasquale",
+    "santo-spirito",
+    "stanic",
+    "torre-a-mare",
+    "san-girolamo_fesca"
+  ];
+
   if (
     !crimes ||
     (crimes.split(",").length <= 1 && crimes.split(",")[0] === "")
   ) {
-    crimes =
-      "omicidio,omicidio_colposo,omicidio_stradale,tentato_omicidio,furto,rapina,violenza_sessuale,aggressione,spaccio,truffa,estorsione,associazione_di_tipo_mafioso";
+    crimes = validCrimes.join(",");
+  } else {
+    // Validate crimes
+    const crimesList = crimes.split(",");
+    const invalidCrimes = crimesList.filter((c) => !validCrimes.includes(c));
+    if (invalidCrimes.length > 0) {
+      res
+        .status(400)
+        .json({ error: `Invalid crimes: ${invalidCrimes.join(", ")}` });
+      return;
+    }
   }
 
   if (
     !quartieri ||
     (quartieri.split(",").length <= 1 && quartieri.split(",")[0] === "")
   ) {
-    quartieri =
-      "bari-vecchia_san-nicola,carbonara,carrassi,ceglie-del-campo,japigia,liberta,loseto,madonnella,murat,palese-macchie,picone,san-paolo,san-pasquale,santo-spirito,stanic,torre-a-mare,san-girolamo_fesca";
+    quartieri = validQuartieri.join(",");
+  } else {
+    // Validate quartieri
+    const quartieriList = quartieri.split(",");
+    const invalidQuartieri = quartieriList.filter(
+      (q) => !validQuartieri.includes(q)
+    );
+    if (invalidQuartieri.length > 0) {
+      res
+        .status(400)
+        .json({ error: `Invalid quartieri: ${invalidQuartieri.join(", ")}` });
+      return;
+    }
   }
 
   const crimesList = crimes.split(",");

@@ -10,60 +10,68 @@ import {
   CollapsibleContent,
   CollapsibleTrigger
 } from "@/components/ui/collapsible";
+import { format } from "date-fns";
 import { GeoJsonObject } from "geojson";
 import { LatLngExpression } from "leaflet";
 import { ArrowUp, Loader2 } from "lucide-react";
 import { BarChart3, ChevronsUpDown } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
+import { useSearchParams } from "react-router-dom";
 
 function Dashboard() {
-  const [filters, setFilters] = useState<Filters>({
-    crimes: {
-      omicidio: 1,
-      omicidio_colposo: 1,
-      omicidio_stradale: 1,
-      tentato_omicidio: 1,
-      furto: 1,
-      rapina: 1,
-      violenza_sessuale: 1,
-      aggressione: 1,
-      spaccio: 1,
-      truffa: 1,
-      estorsione: 1,
-      contrabbando: 1,
-      associazione_di_tipo_mafioso: 1
-    },
-    quartieri: {
-      "bari-vecchia_san-nicola": 1,
-      carbonara: 1,
-      carrassi: 1,
-      "ceglie-del-campo": 1,
-      japigia: 1,
-      liberta: 1,
-      loseto: 1,
-      madonnella: 1,
-      murat: 1,
-      "palese-macchie": 1,
-      picone: 1,
-      "san-paolo": 1,
-      "san-pasquale": 1,
-      "santo-spirito": 1,
-      stanic: 1,
-      "torre-a-mare": 1,
-      "san-girolamo_fesca": 1
-    },
-    weights: {
-      num_of_articles: 1,
-      num_of_people: 0
-    },
-    scaling: {
-      minmax: 1
-    },
-    dates: {
-      startDate: null,
-      endDate: null
-    }
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filters, setFilters] = useState<Filters>(() => {
+    // Initialize from URL if present
+    const urlStartDate = searchParams.get("startDate");
+    const urlEndDate = searchParams.get("endDate");
+    return {
+      crimes: {
+        omicidio: 1,
+        omicidio_colposo: 1,
+        omicidio_stradale: 1,
+        tentato_omicidio: 1,
+        furto: 1,
+        rapina: 1,
+        violenza_sessuale: 1,
+        aggressione: 1,
+        spaccio: 1,
+        truffa: 1,
+        estorsione: 1,
+        contrabbando: 1,
+        associazione_di_tipo_mafioso: 1
+      },
+      quartieri: {
+        "bari-vecchia_san-nicola": 1,
+        carbonara: 1,
+        carrassi: 1,
+        "ceglie-del-campo": 1,
+        japigia: 1,
+        liberta: 1,
+        loseto: 1,
+        madonnella: 1,
+        murat: 1,
+        "palese-macchie": 1,
+        picone: 1,
+        "san-paolo": 1,
+        "san-pasquale": 1,
+        "santo-spirito": 1,
+        stanic: 1,
+        "torre-a-mare": 1,
+        "san-girolamo_fesca": 1
+      },
+      weights: {
+        num_of_articles: 1,
+        num_of_people: 0
+      },
+      scaling: {
+        minmax: 1
+      },
+      dates: {
+        startDate: urlStartDate ? new Date(urlStartDate) : null,
+        endDate: urlEndDate ? new Date(urlEndDate) : null
+      }
+    };
   });
   const [tile, setTile] = useState<string>(
     "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
@@ -82,17 +90,18 @@ function Dashboard() {
     minmax: true
   });
   const [data, setData] = useState<GeoJsonObject | null>(null);
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
   const [legendValues, setLegendValues] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const { articles } = useFetchArticles(setIsLoading);
 
   const position: LatLngExpression = [41.117143, 16.871871];
 
   const handleResetDate = () => {
-    setStartDate(null);
-    setEndDate(null);
+    setFilters((prev) => ({
+      ...prev,
+      dates: { startDate: null, endDate: null }
+    }));
   };
 
   const scrollToTop = () => {
@@ -104,6 +113,7 @@ function Dashboard() {
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
 
     try {
       const queryParams = [];
@@ -117,20 +127,23 @@ function Dashboard() {
         .join(",");
       queryParams.push(`quartieri=${selectedQuartieri}`);
 
-      if (startDate) {
-        const formattedStartDate = startDate
-          .toISOString()
-          .slice(0, 19)
-          .replace("T", " ");
+      // Update URL with current filters
+      const newSearchParams = new URLSearchParams();
+      if (filters.dates.startDate) {
+        const formattedStartDate = format(
+          filters.dates.startDate,
+          "yyyy-MM-dd"
+        );
         queryParams.push(`startDate=${formattedStartDate}`);
+        newSearchParams.set("startDate", formattedStartDate);
       }
-      if (endDate) {
-        const formattedEndDate = endDate
-          .toISOString()
-          .slice(0, 19)
-          .replace("T", " ");
+      if (filters.dates.endDate) {
+        const formattedEndDate = format(filters.dates.endDate, "yyyy-MM-dd");
         queryParams.push(`endDate=${formattedEndDate}`);
+        newSearchParams.set("endDate", formattedEndDate);
       }
+      setSearchParams(newSearchParams);
+
       queryParams.push(
         `${filters?.weights.num_of_articles === 1 ? "weightsForArticles=true" : "weightsForArticles=false"}`
       );
@@ -146,63 +159,63 @@ function Dashboard() {
         `http://127.0.0.1:3000/api/get-data?${queryString}`
       );
 
-      if (response.ok) {
-        const jsonData = await response.json();
-        setData(jsonData);
-
-        // Create legend
-        const crimeIndexes: number[] = [];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (jsonData as any)?.features.forEach((item: any) => {
-          crimeIndexes.push(
-            jsonData.minmaxScaler
-              ? item.properties.crime_index_scalato
-              : item.properties.crime_index
-          );
-        });
-        const minCrime = Math.min(...crimeIndexes);
-        const maxCrime = Math.max(...crimeIndexes);
-        const step = (maxCrime - minCrime) / 8;
-        setLegendValues(
-          Array.from({ length: 8 }, (_, i) =>
-            parseFloat((minCrime + i * step).toFixed(2))
-          )
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.error || `HTTP error! Status: ${response.status}`
         );
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        setInfo((prevState: any) => ({
-          ...prevState,
-          weights: {
-            num_of_articles: jsonData.weightsForArticles,
-            num_of_people: jsonData.weightsForPeople
-          },
-          minmax: jsonData.minmaxScaler
-        }));
-      } else {
-        // eslint-disable-next-line no-console
-        console.error("Response error", response.status);
       }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Request error", error);
-    }
 
-    setIsLoading(false);
-  }, [
-    endDate,
-    filters.crimes,
-    filters.quartieri,
-    filters?.scaling.minmax,
-    filters?.weights.num_of_articles,
-    filters?.weights.num_of_people,
-    startDate
-  ]);
+      const jsonData = await response.json();
+      setData(jsonData);
+
+      // Create legend
+      const crimeIndexes: number[] = [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (jsonData as any)?.features.forEach((item: any) => {
+        crimeIndexes.push(
+          jsonData.minmaxScaler
+            ? item.properties.crime_index_scalato
+            : item.properties.crime_index
+        );
+      });
+      const minCrime = Math.min(...crimeIndexes);
+      const maxCrime = Math.max(...crimeIndexes);
+      const step = (maxCrime - minCrime) / 8;
+      setLegendValues(
+        Array.from({ length: 8 }, (_, i) =>
+          parseFloat((minCrime + i * step).toFixed(2))
+        )
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setInfo((prevState: any) => ({
+        ...prevState,
+        weights: {
+          num_of_articles: jsonData.weightsForArticles,
+          num_of_people: jsonData.weightsForPeople
+        },
+        minmax: jsonData.minmaxScaler
+      }));
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to fetch data";
+      setError(errorMessage);
+      // eslint-disable-next-line no-console
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [filters, setSearchParams]);
 
   useEffect(() => {
-    if (startDate === null) {
-      setEndDate(null);
+    if (filters.dates.startDate === null) {
+      setFilters((prev) => ({
+        ...prev,
+        dates: { ...prev.dates, endDate: null }
+      }));
     }
-  }, [startDate]);
+  }, [filters.dates.startDate, setFilters]);
 
   useEffect(() => {
     fetchData();
@@ -220,10 +233,26 @@ function Dashboard() {
           filters={filters}
           setFilters={setFilters}
           fetchData={fetchData}
-          startDate={startDate}
-          endDate={endDate}
-          setEndDate={setEndDate}
-          setStartDate={setStartDate}
+          startDate={filters.dates.startDate}
+          endDate={filters.dates.endDate}
+          setEndDate={(value) => {
+            const newDate =
+              value instanceof Function ? value(filters.dates.endDate) : value;
+            setFilters((prev) => ({
+              ...prev,
+              dates: { ...prev.dates, endDate: newDate }
+            }));
+          }}
+          setStartDate={(value) => {
+            const newDate =
+              value instanceof Function
+                ? value(filters.dates.startDate)
+                : value;
+            setFilters((prev) => ({
+              ...prev,
+              dates: { ...prev.dates, startDate: newDate }
+            }));
+          }}
           handleResetDate={handleResetDate}
         />
       </div>
@@ -241,6 +270,12 @@ function Dashboard() {
             population={info.population}
             minmax={info.minmax}
           />
+          {error && (
+            <div className="bg-destructive/10 border-destructive text-destructive absolute top-4 right-4 left-4 z-[1000] rounded-lg border p-4">
+              <p className="font-medium">Error loading data</p>
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
           {isLoading ? (
             <Loader2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin" />
           ) : (
@@ -282,8 +317,8 @@ function Dashboard() {
                 minmax={info.minmax}
                 articles={articles}
                 filters={filters}
-                startDate={startDate}
-                endDate={endDate}
+                startDate={filters.dates.startDate}
+                endDate={filters.dates.endDate}
               />
             </CollapsibleContent>
           </Collapsible>
