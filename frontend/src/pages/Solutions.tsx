@@ -349,10 +349,7 @@ function Solutions() {
               <CardFooter>
                 <div className="flex flex-wrap gap-1">
                   {solution.crimeTypes.map((type) => (
-                    <Badge
-                      key={type}
-                      variant="secondary"
-                      className="hover:bg-accent text-xs">
+                    <Badge key={type} variant="secondary" className="text-xs">
                       {crimeFilters.find((f) => f.id === type)?.label || type}
                     </Badge>
                   ))}
@@ -370,7 +367,7 @@ function Solutions() {
       )}
 
       <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
-        <DialogContent className="max-h-[85vh] max-w-3xl overflow-y-auto">
+        <DialogContent className="bg-card max-h-[85vh] w-[80%] overflow-y-auto rounded-lg lg:max-w-3xl">
           {selectedSolution && (
             <>
               <DialogHeader>

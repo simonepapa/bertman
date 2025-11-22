@@ -136,6 +136,42 @@ router.get("/get-articles", (req: Request, res: Response) => {
   });
 });
 
+router.get("/get-filtered-articles", (req: Request, res: Response) => {
+  const quartiere = req.query.quartiere as string;
+  const startDate = req.query.startDate as string;
+  const endDate = req.query.endDate as string;
+
+  const db = getDb();
+  let query = "SELECT * FROM articles";
+  const params: any[] = [];
+  const conditions: string[] = [];
+
+  if (quartiere) {
+    conditions.push("quartiere = ?");
+    params.push(quartiere);
+  }
+
+  if (startDate && endDate) {
+    conditions.push("date BETWEEN ? AND ?");
+    params.push(startDate, endDate);
+  }
+
+  if (conditions.length > 0) {
+    query += " WHERE " + conditions.join(" AND ");
+  }
+
+  query += " ORDER BY date DESC";
+
+  db.all(query, params, (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.json(rows);
+    }
+    db.close();
+  });
+});
+
 router.post("/upload-to-database", (req: Request, res: Response) => {
   const { jsonFile } = req.body;
   if (!jsonFile || !Array.isArray(jsonFile)) {
