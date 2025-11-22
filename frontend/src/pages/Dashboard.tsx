@@ -86,7 +86,7 @@ function Dashboard() {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [legendValues, setLegendValues] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { articles, treeArticles } = useFetchArticles(setIsLoading, true);
+  const { articles } = useFetchArticles(setIsLoading);
 
   const position: LatLngExpression = [41.117143, 16.871871];
 
@@ -281,7 +281,6 @@ function Dashboard() {
                 weights={info.weights || null}
                 minmax={info.minmax}
                 articles={articles}
-                treeArticles={treeArticles}
                 filters={filters}
                 startDate={startDate}
                 endDate={endDate}

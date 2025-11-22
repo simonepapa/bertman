@@ -94,7 +94,7 @@ function ReadArticles() {
         params.append("endDate", format(dateRange.to, "yyyy-MM-dd"));
       }
 
-      const url = `http://127.0.0.1:3000/api/get-filtered-articles?${params.toString()}`;
+      const url = `http://127.0.0.1:3000/api/get-articles?${params.toString()}`;
       const response = await fetch(url);
 
       if (!response.ok) {

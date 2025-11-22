@@ -1,5 +1,5 @@
-import { getCrimeName, getQuartiereIndex } from "../helpers/utils";
-import { Article, CustomTreeItem, Filters } from "../types/global";
+import { getCrimeName } from "../helpers/utils";
+import { Article, Filters } from "../types/global";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -9,7 +9,7 @@ import {
   ChartTooltipContent
 } from "@/components/ui/chart";
 import { Feature, GeoJsonObject } from "geojson";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -28,8 +28,7 @@ type Props = {
   data: GeoJsonObject | null;
   weights: { [key: string]: boolean } | null;
   minmax: boolean;
-  articles: CustomTreeItem[] | null;
-  treeArticles: Article[] | null;
+  articles: Article[] | null;
   filters: Filters;
   startDate: Date | null;
   endDate: Date | null;
@@ -52,14 +51,27 @@ const crimeProperties = [
   "violenza_sessuale"
 ];
 
-function Plots({
-  data,
-  weights,
-  minmax,
-  articles,
-  treeArticles,
-  filters
-}: Props) {
+const keyToLabels: { [key: string]: string } = {
+  "bari-vecchia_san-nicola": "Bari Vecchia - San Nicola",
+  carbonara: "Carbonara",
+  carrassi: "Carrassi",
+  "ceglie-del-campo": "Ceglie del Campo",
+  japigia: "Japigia",
+  liberta: "Libertà",
+  loseto: "Loseto",
+  madonnella: "Madonnella",
+  murat: "Murat",
+  "palese-macchie": "Palese - Macchie",
+  picone: "Picone",
+  "san-girolamo_fesca": "San Girolamo - Fesca",
+  "san-paolo": "San Paolo",
+  "san-pasquale": "San Pasquale",
+  "santo-spirito": "Santo Spirito",
+  stanic: "Stanic",
+  "torre-a-mare": "Torre a mare"
+};
+
+function Plots({ data, weights, minmax, articles, filters }: Props) {
   const [crimesByYear, setCrimesByYear] = useState<
     | {
         [key: string]: number | string;
@@ -80,28 +92,6 @@ function Plots({
   >(null);
   const [hoveredLine, setHoveredLine] = useState<string | null>(null);
 
-  const quartieri = useMemo(
-    () => [
-      "Bari Vecchia - San Nicola",
-      "Carbonara",
-      "Carrassi",
-      "Ceglie del Campo",
-      "Japigia",
-      "Libertà",
-      "Loseto",
-      "Madonnella",
-      "Murat",
-      "Palese - Macchie",
-      "Picone",
-      "San Girolamo - Fesca",
-      "San Paolo",
-      "San Pasquale",
-      "Santo Spirito",
-      "Stanic",
-      "Torre a mare"
-    ],
-    []
-  );
   const colors: string[] = [
     "#FF5733",
     "#33FF57",
@@ -135,75 +125,41 @@ function Plots({
     })
   ];
 
-  const articlesMap = useMemo(() => {
-    if (!treeArticles) return new Map<string, Article>();
-    return new Map(
-      treeArticles.map((article) => [article.id.toString(), article])
-    );
-  }, [treeArticles]);
-
   const countCrimesByYear = useCallback(() => {
     if (articles) {
       const crimeCountByYear: { [key: string]: number } = {};
       const articleCountByYear: { [key: string]: number } = {};
       const final: { [key: string]: number | string }[] = [];
 
-      const filteredArticles = articles.filter((obj: CustomTreeItem) => {
-        const quartiere_index = getQuartiereIndex(obj.label);
-
-        return filters.quartieri[quartiere_index] === 1;
+      const filteredArticles = articles.filter((article) => {
+        const quartiere = article.quartiere;
+        // Check if quartiere is selected in filters
+        // We need to map quartiere name to the key in filters.quartieri
+        // The filters.quartieri keys are like "bari-vecchia_san-nicola"
+        // The article.quartiere is like "bari-vecchia_san-nicola" (it comes from DB/API)
+        // So we can check directly if it exists and is 1
+        return (
+          quartiere &&
+          filters.quartieri[quartiere] === 1 &&
+          (!filters.dates.startDate ||
+            new Date(article.date) >= filters.dates.startDate) &&
+          (!filters.dates.endDate ||
+            new Date(article.date) <= filters.dates.endDate)
+        );
       });
 
-      filteredArticles.forEach((area) => {
-        if (area.children) {
-          area.children.forEach((yearObj) => {
-            const year = yearObj.label;
-            let crimes = 0;
-            let totalArticles = 0;
+      filteredArticles.forEach((article) => {
+        const year = new Date(article.date).getFullYear().toString();
+        let crimes = 0;
 
-            if (yearObj.children) {
-              yearObj.children.forEach((monthObj) => {
-                if (monthObj.children) {
-                  monthObj.children.forEach((crimeObj) => {
-                    if (!crimeObj.date) return;
+        // Count crimes for this article
+        const crimeSum = crimeProperties.reduce((sum, prop) => {
+          return sum + (article[prop as keyof Article] === 1 ? 1 : 0);
+        }, 0);
+        crimes += crimeSum;
 
-                    const crimeDate = new Date(crimeObj.date);
-                    const startDate = filters?.dates?.startDate;
-                    const endDate = filters?.dates?.endDate;
-
-                    const isInRange =
-                      (!startDate || crimeDate >= startDate) &&
-                      (!endDate || crimeDate <= endDate);
-
-                    if (isInRange) {
-                      // Count all articles
-                      totalArticles += 1;
-
-                      // Find the full article object from the map
-                      const fullArticle = articlesMap.get(crimeObj.id);
-
-                      /// Check and count how many crimes = 1
-                      if (fullArticle) {
-                        const crimeSum = crimeProperties.reduce((sum, prop) => {
-                          return (
-                            sum +
-                            (fullArticle[prop as keyof Article] === 1 ? 1 : 0)
-                          );
-                        }, 0);
-
-                        crimes += crimeSum;
-                      }
-                    }
-                  });
-                }
-              });
-            }
-
-            crimeCountByYear[year] = (crimeCountByYear[year] || 0) + crimes;
-            articleCountByYear[year] =
-              (articleCountByYear[year] || 0) + totalArticles;
-          });
-        }
+        crimeCountByYear[year] = (crimeCountByYear[year] || 0) + crimes;
+        articleCountByYear[year] = (articleCountByYear[year] || 0) + 1;
       });
 
       Object.keys(crimeCountByYear).map((year: string) => {
@@ -219,72 +175,43 @@ function Plots({
     }
   }, [
     articles,
-    articlesMap,
     filters.quartieri,
-    filters?.dates?.startDate,
-    filters?.dates?.endDate
+    filters.dates.startDate,
+    filters.dates.endDate
   ]);
 
   const countCrimesByYearAndNeighborhood = useCallback(() => {
     if (articles) {
       const crimeData: { [key: string]: { [key: string]: number } } = {};
 
-      const filteredArticles = articles.filter((obj: CustomTreeItem) => {
-        const quartiere_index = getQuartiereIndex(obj.label);
-
-        return filters.quartieri[quartiere_index] === 1;
+      const filteredArticles = articles.filter((article) => {
+        const quartiere = article.quartiere;
+        return (
+          quartiere &&
+          filters.quartieri[quartiere] === 1 &&
+          (!filters.dates.startDate ||
+            new Date(article.date) >= filters.dates.startDate) &&
+          (!filters.dates.endDate ||
+            new Date(article.date) <= filters.dates.endDate)
+        );
       });
 
-      filteredArticles.forEach((area) => {
-        const neighborhood = area.label;
-        if (quartieri.includes(neighborhood) && area.children) {
-          if (!crimeData[neighborhood]) {
-            crimeData[neighborhood] = {};
-          }
+      filteredArticles.forEach((article) => {
+        // quartiere is guaranteed to be defined and valid due to filter
+        const quartiereSlug = article.quartiere!;
+        const year = new Date(article.date).getFullYear().toString();
+        let crimes = 0;
 
-          area.children.forEach((yearObj) => {
-            const year = yearObj.label;
-            let crimes = 0;
+        const crimeSum = crimeProperties.reduce((sum, prop) => {
+          return sum + (article[prop as keyof Article] === 1 ? 1 : 0);
+        }, 0);
+        crimes += crimeSum;
 
-            if (yearObj.children) {
-              yearObj.children.forEach((monthObj) => {
-                if (monthObj.children) {
-                  monthObj.children.forEach((crimeObj) => {
-                    if (!crimeObj.date) return;
-
-                    const crimeDate = new Date(crimeObj.date);
-                    const startDate = filters?.dates?.startDate;
-                    const endDate = filters?.dates?.endDate;
-
-                    const isInRange =
-                      (!startDate || crimeDate >= startDate) &&
-                      (!endDate || crimeDate <= endDate);
-
-                    if (isInRange) {
-                      // Find the full article object from the map (O(1) lookup)
-                      const fullArticle = articlesMap.get(crimeObj.id);
-
-                      // Check and count how many crimes = 1
-                      if (fullArticle) {
-                        const crimeSum = crimeProperties.reduce((sum, prop) => {
-                          return (
-                            sum +
-                            (fullArticle[prop as keyof Article] === 1 ? 1 : 0)
-                          );
-                        }, 0);
-
-                        crimes += crimeSum;
-                      }
-                    }
-                  });
-                }
-              });
-            }
-
-            crimeData[neighborhood][year] =
-              (crimeData[neighborhood][year] || 0) + crimes;
-          });
+        if (!crimeData[quartiereSlug]) {
+          crimeData[quartiereSlug] = {};
         }
+        crimeData[quartiereSlug][year] =
+          (crimeData[quartiereSlug][year] || 0) + crimes;
       });
 
       const allYears = new Set(
@@ -305,11 +232,9 @@ function Plots({
     }
   }, [
     articles,
-    articlesMap,
     filters.quartieri,
-    filters?.dates?.startDate,
-    filters?.dates?.endDate,
-    quartieri
+    filters.dates.startDate,
+    filters.dates.endDate
   ]);
 
   const countCrimesByType = useCallback(() => {
@@ -355,26 +280,6 @@ function Plots({
     countCrimesByYear();
     countCrimesByYearAndNeighborhood();
   }, [countCrimesByType, countCrimesByYear, countCrimesByYearAndNeighborhood]);
-
-  const keyToLabels: { [key: string]: string } = {
-    "Bari Vecchia - San Nicola": "Bari Vecchia - San Nicola",
-    Carbonara: "Carbonara",
-    Carrassi: "Carrassi",
-    "Ceglie del Campo": "Ceglie del Campo",
-    Japigia: "Japigia",
-    Libertà: "Libertà",
-    Loseto: "Loseto",
-    Madonnella: "Madonnella",
-    Murat: "Murat",
-    "Palese - Macchie": "Palese - Macchie",
-    Picone: "Picone",
-    "San Girolamo - Fesca": "San Girolamo - Fesca",
-    "San Paolo": "San Paolo",
-    "San Pasquale": "San Pasquale",
-    "Santo Spirito": "Santo Spirito",
-    Stanic: "Stanic",
-    "Torre a mare": "Torre a mare"
-  };
 
   return (
     <div className="xl:pl-4">
@@ -574,21 +479,26 @@ function Plots({
                         }
                         onMouseLeave={() => setHoveredLine(null)}
                       />
-                      {Object.keys(keyToLabels).map((key, index) => (
-                        <Line
-                          key={key}
-                          type="monotone"
-                          dataKey={key}
-                          stroke={colors[index % colors.length]}
-                          strokeWidth={hoveredLine === key ? 5 : 3}
-                          strokeOpacity={
-                            hoveredLine && hoveredLine !== key ? 0.2 : 1
-                          }
-                          dot={false}
-                          onMouseEnter={() => setHoveredLine(key)}
-                          onMouseLeave={() => setHoveredLine(null)}
-                        />
-                      ))}
+                      {Object.keys(keyToLabels)
+                        .filter((key) => filters.quartieri[key] === 1)
+                        .map((key) => {
+                          const index = Object.keys(keyToLabels).indexOf(key);
+                          return (
+                            <Line
+                              key={key}
+                              type="monotone"
+                              dataKey={key}
+                              stroke={colors[index % colors.length]}
+                              strokeWidth={hoveredLine === key ? 5 : 3}
+                              strokeOpacity={
+                                hoveredLine && hoveredLine !== key ? 0.2 : 1
+                              }
+                              dot={false}
+                              onMouseEnter={() => setHoveredLine(key)}
+                              onMouseLeave={() => setHoveredLine(null)}
+                            />
+                          );
+                        })}
                     </LineChart>
                   </ChartContainer>
                 </CardContent>

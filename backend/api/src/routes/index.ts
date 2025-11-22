@@ -125,18 +125,6 @@ router.get("/get-data", (req: Request, res: Response) => {
 });
 
 router.get("/get-articles", (req: Request, res: Response) => {
-  const db = getDb();
-  db.all("SELECT * FROM articles", [], (err, rows) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-    } else {
-      res.json(rows);
-    }
-    db.close();
-  });
-});
-
-router.get("/get-filtered-articles", (req: Request, res: Response) => {
   const quartiere = req.query.quartiere as string;
   const startDate = req.query.startDate as string;
   const endDate = req.query.endDate as string;
