@@ -305,9 +305,60 @@ router.get("/get-articles", (req: Request, res: Response) => {
 
 router.post("/upload-to-database", (req: Request, res: Response) => {
   const { jsonFile } = req.body;
+
   if (!jsonFile || !Array.isArray(jsonFile)) {
-    res.status(400).send("Invalid input");
+    res
+      .status(400)
+      .json({ error: "Invalid input: 'jsonFile' must be an array" });
     return;
+  }
+
+  const requiredFields = ["link", "title", "date", "content", "python_id"];
+  const validCrimes = [
+    "omicidio",
+    "omicidio_colposo",
+    "omicidio_stradale",
+    "tentato_omicidio",
+    "furto",
+    "rapina",
+    "violenza_sessuale",
+    "aggressione",
+    "spaccio",
+    "truffa",
+    "estorsione",
+    "contrabbando",
+    "associazione_di_tipo_mafioso"
+  ];
+
+  for (let i = 0; i < jsonFile.length; i++) {
+    const item = jsonFile[i];
+    if (typeof item !== "object" || item === null) {
+      res
+        .status(400)
+        .json({ error: `Invalid input: Item at index ${i} is not an object` });
+      return;
+    }
+
+    const missingFields = requiredFields.filter((field) => !(field in item));
+    if (missingFields.length > 0) {
+      res.status(400).json({
+        error: `Invalid input: Item at index ${i} is missing fields: ${missingFields.join(", ")}`
+      });
+      return;
+    }
+
+    for (const crime of validCrimes) {
+      if (
+        !item[crime] ||
+        typeof item[crime].value !== "number" ||
+        typeof item[crime].prob !== "number"
+      ) {
+        res.status(400).json({
+          error: `Invalid input: Item at index ${i} has invalid or missing crime label '${crime}'`
+        });
+        return;
+      }
+    }
   }
 
   const db = getDb();
