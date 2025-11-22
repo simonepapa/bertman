@@ -15,7 +15,7 @@ export const number_of_people: Record<string, number> = {
   "santo-spirito": 1858,
   stanic: 4489,
   "torre-a-mare": 5070,
-  "san-girolamo_fesca": 4721,
+  "san-girolamo_fesca": 4721
 };
 
 class MinMaxScaler {
@@ -40,7 +40,7 @@ class MinMaxScaler {
     return data.map(
       (x) =>
         ((x - this.min) / (this.max - this.min)) * (maxRange - minRange) +
-        minRange,
+        minRange
     );
   }
 
@@ -57,7 +57,7 @@ export const analyze_quartieri = (
   selected_crimes: string[],
   weightsForArticles: boolean = true,
   weightsForPeople: boolean = false,
-  minmaxScaler: boolean = true,
+  minmaxScaler: boolean = true
 ) => {
   const scaler = new MinMaxScaler([0, 100]);
 
@@ -74,7 +74,7 @@ export const analyze_quartieri = (
     truffa: 0,
     estorsione: 0,
     contrabbando: 0,
-    associazione_di_tipo_mafioso: 0,
+    associazione_di_tipo_mafioso: 0
   };
 
   const weights: Record<string, number> = {
@@ -90,7 +90,7 @@ export const analyze_quartieri = (
     truffa: 0.3,
     estorsione: 0.6,
     contrabbando: 0.4,
-    associazione_di_tipo_mafioso: 1,
+    associazione_di_tipo_mafioso: 1
   };
 
   // Filter crimes
@@ -106,7 +106,7 @@ export const analyze_quartieri = (
           }
           return obj;
         },
-        {} as Record<string, number>,
+        {} as Record<string, number>
       );
   }
 
@@ -118,7 +118,7 @@ export const analyze_quartieri = (
       acc[quartiere].push(article);
       return acc;
     },
-    {} as Record<string, any[]>,
+    {} as Record<string, any[]>
   );
 
   for (const group in groupedArticles) {
@@ -144,7 +144,7 @@ export const analyze_quartieri = (
     // Weighted risk index
     const crimini_totali = Object.values(crime_data).reduce(
       (sum, c) => sum + c.frequenza,
-      0,
+      0
     );
     for (const crime in filtered_crimes) {
       if (crime_data[crime] && weights[crime]) {
@@ -155,7 +155,7 @@ export const analyze_quartieri = (
 
     // Update quartieri_data
     const quartiereEntry = quartieri_data.find(
-      (quartiere: any) => quartiere.Quartiere === group,
+      (quartiere: any) => quartiere.Quartiere === group
     );
     if (quartiereEntry) {
       quartiereEntry["Peso quartiere"] = group_df.length;
@@ -165,7 +165,7 @@ export const analyze_quartieri = (
     // Risk index by quartiere
     let indice_di_rischio_totale = Object.values(crime_data).reduce(
       (sum, c) => sum + c.crime_index,
-      0,
+      0
     );
 
     if (weightsForArticles) {
@@ -192,7 +192,7 @@ export const analyze_quartieri = (
 
     // Add to GeoJSON
     const feature = geojson_data.features.find(
-      (f: any) => f.properties.python_id === group,
+      (f: any) => f.properties.python_id === group
     );
     if (feature) {
       feature.properties.crimini = crime_data;
@@ -210,7 +210,7 @@ export const analyze_quartieri = (
 
   // Scale overall risk index
   const riskIndices = quartieri_data.map(
-    (quartiere: any) => quartiere["Indice di rischio"],
+    (quartiere: any) => quartiere["Indice di rischio"]
   );
   const scaledRiskIndices = scaler.fit_transform(riskIndices);
   quartieri_data.forEach((quartiere: any, i: number) => {
@@ -226,7 +226,7 @@ export const analyze_quartieri = (
 
 export const calculate_statistics = (
   quartieri_data: any[],
-  geojson_data: any,
+  geojson_data: any
 ) => {
   const statistiche_dict: Record<string, any> = {};
 
@@ -244,7 +244,7 @@ export const calculate_statistics = (
       crimini_totali: crimini_totali,
       crime_index: Number(crime_index.toFixed(2)),
       crime_index_scalato: Number(crime_index_scalato.toFixed(2)),
-      population: number_of_people[quartiere] || 0,
+      population: number_of_people[quartiere] || 0
     };
   });
 

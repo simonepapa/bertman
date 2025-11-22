@@ -48,7 +48,7 @@ router.get("/get-data", (req: Request, res: Response) => {
     Quartiere: quartiere,
     "Totale crimini": 0,
     "Indice di rischio": 0,
-    "Indice di rischio normalizzato": 0,
+    "Indice di rischio normalizzato": 0
   }));
 
   // Read all articles from the database
@@ -79,14 +79,14 @@ router.get("/get-data", (req: Request, res: Response) => {
 
       let geojson_data = {
         type: "FeatureCollection",
-        features: [] as any[],
+        features: [] as any[]
       };
 
       const geometry_json = JSON.parse(data);
 
       quartieriList.forEach((quartiere) => {
         const matching_quartiere = geometry_json.find(
-          (feature: any) => feature.python_id === quartiere,
+          (feature: any) => feature.python_id === quartiere
         );
 
         if (matching_quartiere) {
@@ -94,9 +94,9 @@ router.get("/get-data", (req: Request, res: Response) => {
             type: "Feature",
             properties: {
               name: matching_quartiere.name,
-              python_id: matching_quartiere.python_id,
+              python_id: matching_quartiere.python_id
             },
-            geometry: matching_quartiere.geometry,
+            geometry: matching_quartiere.geometry
           });
         }
       });
@@ -109,13 +109,13 @@ router.get("/get-data", (req: Request, res: Response) => {
         crimesList,
         weightsForArticles,
         weightsForPeople,
-        minmaxScaler,
+        minmaxScaler
       );
 
       // Statistics
       const final_geojson = calculate_statistics(
         quartieri_data,
-        analyzed_geojson,
+        analyzed_geojson
       );
 
       res.json(final_geojson);
@@ -128,9 +128,14 @@ router.get("/get-articles", (req: Request, res: Response) => {
   const quartiere = req.query.quartiere as string;
   const startDate = req.query.startDate as string;
   const endDate = req.query.endDate as string;
+  const page = req.query.page ? parseInt(req.query.page as string) : undefined;
+  const limit = req.query.limit
+    ? parseInt(req.query.limit as string)
+    : undefined;
 
   const db = getDb();
   let query = "SELECT * FROM articles";
+  let countQuery = "SELECT COUNT(*) as total FROM articles";
   const params: any[] = [];
   const conditions: string[] = [];
 
@@ -145,19 +150,58 @@ router.get("/get-articles", (req: Request, res: Response) => {
   }
 
   if (conditions.length > 0) {
-    query += " WHERE " + conditions.join(" AND ");
+    const conditionStr = " WHERE " + conditions.join(" AND ");
+    query += conditionStr;
+    countQuery += conditionStr;
   }
 
   query += " ORDER BY date DESC";
 
-  db.all(query, params, (err, rows) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-    } else {
-      res.json(rows);
-    }
-    db.close();
-  });
+  if (page && limit) {
+    const offset = (page - 1) * limit;
+    query += ` LIMIT ? OFFSET ?`;
+    params.push(limit, offset);
+
+    // For count query, we need the params without limit/offset
+    // We can't reuse 'params' directly because we just pushed limit/offset
+    // So we need to use a separate params array for the count query or slice the current one
+    const countParams = params.slice(0, params.length - 2);
+
+    db.get(countQuery, countParams, (err, row: any) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        db.close();
+        return;
+      }
+
+      const total = row.total;
+
+      db.all(query, params, (err, rows) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+        } else {
+          res.json({
+            articles: rows,
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit)
+          });
+        }
+        db.close();
+      });
+    });
+  } else {
+    // Legacy behavior for Dashboard (return all articles)
+    db.all(query, params, (err, rows) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+      } else {
+        res.json(rows);
+      }
+      db.close();
+    });
+  }
 });
 
 router.post("/upload-to-database", (req: Request, res: Response) => {
@@ -206,7 +250,7 @@ router.post("/upload-to-database", (req: Request, res: Response) => {
         item.contrabbando?.value,
         item.contrabbando?.prob,
         item.associazione_di_tipo_mafioso?.value,
-        item.associazione_di_tipo_mafioso?.prob,
+        item.associazione_di_tipo_mafioso?.prob
       );
     });
     stmt.finalize();

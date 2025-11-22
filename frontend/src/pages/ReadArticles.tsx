@@ -18,7 +18,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { format, startOfYear, endOfYear } from "date-fns";
-import { Loader2, ArrowUp, ChevronsUpDown } from "lucide-react";
+import { Loader2, ArrowUp, ArrowDown, ChevronsUpDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { DateRange } from "react-day-picker";
 import { useSearchParams } from "react-router-dom";
@@ -83,9 +83,19 @@ function ReadArticles() {
     };
   });
 
+  const [page, setPage] = useState<number>(() => {
+    const pageParam = searchParams.get("page");
+    return pageParam ? parseInt(pageParam) : 1;
+  });
+  const [limit, setLimit] = useState<number>(() => {
+    const limitParam = searchParams.get("limit");
+    return limitParam ? parseInt(limitParam) : 10;
+  });
+  const [totalPages, setTotalPages] = useState<number>(1);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const handleSearch = async () => {
+  const handleSearch = async (newPage: number = 1, newLimit?: number) => {
+    const currentLimit = newLimit || limit;
     setIsLoading(true);
     setHasSearched(true);
     setSelectedArticle(null);
@@ -102,18 +112,27 @@ function ReadArticles() {
         const endStr = format(dateRange.to, "yyyy-MM-dd");
         params.append("startDate", startStr);
         params.append("endDate", endStr);
-
-        // Update URL params
-        const newSearchParams = new URLSearchParams(searchParams);
-        if (selectedQuartiere) {
-          newSearchParams.set("quartiere", selectedQuartiere);
-        } else {
-          newSearchParams.delete("quartiere");
-        }
-        newSearchParams.set("start", startStr);
-        newSearchParams.set("end", endStr);
-        setSearchParams(newSearchParams);
       }
+
+      params.append("page", newPage.toString());
+      params.append("limit", currentLimit.toString());
+
+      // Update URL params
+      const newSearchParams = new URLSearchParams(searchParams);
+      if (selectedQuartiere) {
+        newSearchParams.set("quartiere", selectedQuartiere);
+      } else {
+        newSearchParams.delete("quartiere");
+      }
+      if (dateRange?.from && dateRange?.to) {
+        newSearchParams.set("start", format(dateRange.from, "yyyy-MM-dd"));
+        newSearchParams.set("end", format(dateRange.to, "yyyy-MM-dd"));
+      }
+      newSearchParams.set("page", newPage.toString());
+      newSearchParams.set("limit", currentLimit.toString());
+      setSearchParams(newSearchParams);
+      setPage(newPage);
+      if (newLimit) setLimit(newLimit);
 
       const url = `http://127.0.0.1:3000/api/get-articles?${params.toString()}`;
       const response = await fetch(url);
@@ -123,7 +142,14 @@ function ReadArticles() {
       }
 
       const jsonData = await response.json();
-      setArticles(jsonData);
+      if (jsonData.articles) {
+        setArticles(jsonData.articles);
+        setTotalPages(jsonData.totalPages);
+      } else {
+        // Fallback if backend returns array (shouldn't happen with page param)
+        setArticles(jsonData);
+        setTotalPages(1);
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error("Request error", error);
@@ -135,8 +161,18 @@ function ReadArticles() {
 
   // Trigger search on mount if params exist
   useEffect(() => {
-    if (searchParams.has("start") || searchParams.has("quartiere")) {
-      handleSearch();
+    if (
+      searchParams.has("start") ||
+      searchParams.has("quartiere") ||
+      searchParams.has("page") ||
+      searchParams.has("limit")
+    ) {
+      const pageParam = searchParams.get("page");
+      const limitParam = searchParams.get("limit");
+      handleSearch(
+        pageParam ? parseInt(pageParam) : 1,
+        limitParam ? parseInt(limitParam) : 10
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -172,6 +208,13 @@ function ReadArticles() {
     });
   };
 
+  const scrollToBottom = () => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: "smooth"
+    });
+  };
+
   const handleReset = () => {
     setSelectedQuartiere(undefined);
     setDateRange({
@@ -180,6 +223,9 @@ function ReadArticles() {
     });
     setHasSearched(false);
     setArticles([]);
+    setPage(1);
+    setTotalPages(1);
+    setLimit(10);
     setSearchParams(new URLSearchParams());
   };
 
@@ -188,6 +234,10 @@ function ReadArticles() {
       <ArrowUp
         className="bg-primary text-primary-foreground hover:bg-primary/90 fixed right-8 bottom-8 z-[10000] h-12 w-12 cursor-pointer rounded-full p-3 shadow-lg transition-all hover:shadow-xl"
         onClick={scrollToTop}
+      />
+      <ArrowDown
+        className="bg-primary text-primary-foreground hover:bg-primary/90 fixed right-24 bottom-8 z-[10000] h-12 w-12 cursor-pointer rounded-full p-3 shadow-lg transition-all hover:shadow-xl"
+        onClick={scrollToBottom}
       />
       <div className="mt-8 mb-12 flex flex-col gap-8 px-4 lg:mx-auto lg:max-w-[1400px] xl:flex-row xl:px-0">
         <div className="w-full xl:sticky xl:top-8 xl:w-[30%] xl:self-start">
@@ -231,8 +281,8 @@ function ReadArticles() {
 
               <div className="flex gap-2">
                 <Button
-                  onClick={handleSearch}
-                  className="flex-1"
+                  onClick={() => handleSearch(1)}
+                  className="h-10 flex-1"
                   disabled={isLoading}>
                   {isLoading ? (
                     <>
@@ -347,6 +397,61 @@ function ReadArticles() {
                   No articles found for the selected filters.
                 </p>
               )}
+
+              {articles && articles.length > 0 && (
+                <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground text-sm">
+                      Rows per page
+                    </span>
+                    <Select
+                      value={limit.toString()}
+                      onValueChange={(value) => {
+                        const newLimit = parseInt(value);
+                        setLimit(newLimit);
+                        if (hasSearched) {
+                          handleSearch(1, newLimit);
+                        }
+                      }}>
+                      <SelectTrigger className="h-8 w-[70px]">
+                        <SelectValue placeholder="10" />
+                      </SelectTrigger>
+                      <SelectContent side="top">
+                        <SelectItem value="10">10</SelectItem>
+                        <SelectItem value="20">20</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                        <SelectItem value="100">100</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        const newPage = Math.max(1, page - 1);
+                        handleSearch(newPage);
+                        scrollToTop();
+                      }}
+                      disabled={page === 1 || isLoading}>
+                      Previous
+                    </Button>
+                    <span className="text-sm font-medium">
+                      Page {page} of {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        const newPage = Math.min(totalPages, page + 1);
+                        handleSearch(newPage);
+                        scrollToTop();
+                      }}
+                      disabled={page === totalPages || isLoading}>
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
             </>
           )}
 
@@ -358,7 +463,7 @@ function ReadArticles() {
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
-          <DialogContent className="bg-card max-h-[85vh] w-[95%] overflow-y-auto rounded-lg lg:max-w-3xl">
+          <DialogContent className="bg-card max-h-[85vh] w-[95%] max-w-3xl overflow-y-auto rounded-lg">
             {selectedArticle && (
               <>
                 <DialogHeader>
