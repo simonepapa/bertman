@@ -17,7 +17,7 @@ import {
   Building2,
   Camera,
   Ear,
-  ExternalLink,
+  ChevronsUpDown,
   Gavel,
   Globe,
   Lightbulb,
@@ -338,7 +338,7 @@ function Solutions() {
                 <CardTitle className="flex items-center gap-2">
                   <Icon className="text-primary h-6 w-6" />
                   {solution.title}
-                  <ExternalLink className="text-muted-foreground group-hover:text-primary ml-auto h-4 w-4 transition-colors" />
+                  <ChevronsUpDown className="text-muted-foreground group-hover:text-primary ml-auto h-4 w-4 transition-colors" />
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex-1">

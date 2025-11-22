@@ -18,7 +18,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { format, startOfYear, endOfYear } from "date-fns";
-import { Loader2, ArrowUp, ExternalLink } from "lucide-react";
+import { Loader2, ArrowUp, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 import { DateRange } from "react-day-picker";
 
@@ -249,7 +249,7 @@ function ReadArticles() {
                           <CardTitle className="text-lg">
                             {article.title}
                           </CardTitle>
-                          <ExternalLink className="text-muted-foreground h-5 w-5 shrink-0" />
+                          <ChevronsUpDown className="text-muted-foreground h-5 w-5 shrink-0" />
                         </div>
                         <div className="flex flex-wrap items-center gap-2 pt-1">
                           <Badge variant="secondary" className="font-normal">
